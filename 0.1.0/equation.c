@@ -419,47 +419,53 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
                      long double *r1,   ///< velocity vector.
                      long double t)     ///< actual time.
 {
-  long double r[2], v[2];
-  long double tc, g_l, gl;
+  long double v[2], k[2];
+  long double tc, g_l, gl, glt, lt, li, alpha;
   v[0] = eq->v[0] - eq->w[0];
   v[1] = eq->v[1] - eq->w[1];
-  r1[0] = eq->w[0] + v[0] / (1.L + eq->lambda * fabsl (eq->v[0]) * t);
-  r1[1] = eq->w[1] + v[1] / (1.L + eq->lambda * fabsl (eq->v[1]) * t);
-  r[0] = eq->r[0] + eq->w[0] * t;
-  r[1] = eq->r[1] + eq->w[1] * t;
+  lt = eq->lambda * t;
+  k[0] = 1.L + lt * fabsl (v[0]);
+  k[1] = 1.L + lt * fabsl (v[1]);
+  r1[0] = eq->w[0] + v[0] / k[0];
+  r1[1] = eq->w[1] + v[1] / k[1];
+  li = 1.L / eq->lambda;
+  k[0] = li * logl (k[0]);
+  k[1] = li * logl (k[1]);
+  r0[0] = eq->r[0] + eq->w[0] * t;
+  r0[1] = eq->r[1] + eq->w[1] * t;
   if (v[0] >= 0.L)
-    r0[0] = r[0]
-      + 1.L / eq->lambda * logl (1.L + eq->lambda * fabsl (v[0]) * t);
+    r0[0] += k[0];
   else
-    r0[0] = r[0]
-      - 1.L / eq->lambda * logl (1.L + eq->lambda * fabsl (v[0]) * t);
+    r0[0] -= k[0];
   if (v[1] >= 0.L)
-    r0[1] = r[1]
-      + 1.L / eq->lambda * logl (1.L + eq->lambda * fabsl (v[1]) * t);
+    r0[1] += k[1];
   else
-    r0[1] = r[1]
-      - 1.L / eq->lambda * logl (1.L + eq->lambda * fabsl (v[1]) * t);
+    r0[1] -= k[1];
   gl = sqrtl (G * eq->lambda);
+  glt = gl * t;
   g_l = sqrtl (G / eq->lambda);
   r0[2] = eq->r[2];
   if (eq->v[2] <= 0.L)
     {
-      r1[2] = g_l * (eq->v[2] * coshl (gl * t) - g_l * sinhl (gl * t))
-        / (g_l * coshl (gl * t) - eq->v[2] * sinhl (gl * t));
-      r0[2] -=
-        logl (coshl (gl * t) - eq->v[2] * sinh (gl * t) / g_l) / eq->lambda;
+      k[0] = coshl (glt);
+      k[1] = sinhl (glt);
+      r1[2] = g_l * (eq->v[2] * k[0] - g_l * k[1])
+        / (g_l * k[0] - eq->v[2] * k[1]);
+      r0[2] -= li * logl (k[0] - eq->v[2] * k[1] / g_l);
       return;
     }
-  tc = atanl (eq->v[2] / g_l) / gl;
+  alpha = atanl (eq->v[2] / g_l);
+  tc = alpha / gl;
   if (t <= tc)
     {
-      r1[2] = tanl (atanl (eq->v[2] / g_l) - gl * t) * g_l;
-      r0[2] += logl (1.L - gl * t / cosl (atanl (eq->v[2] / g_l))) / eq->lambda;
+      r1[2] = g_l * tanl (alpha - glt);
+      r0[2] += li * logl (cosl (alpha - glt) / cosl (alpha));
       return;
     }
   t -= tc;
-  r1[2] = -g_l * tanhl (gl * t);
-  r0[2] -= logl (cosl (atanl (eq->v[2] / g_l)) * coshl (gl * t)) / eq->lambda;
+  glt = gl * t;
+  r1[2] = -g_l * tanhl (glt);
+  r0[2] -= li * logl (cosl (alpha) * coshl (glt));
 }
 
 /**

@@ -394,7 +394,7 @@ equation_acceleration_2 (Equation * eq, ///< Equation struct.
  * \dot{z}_0\leq 0\Rightarrow & z_0
  * -\frac{\ln\left[\cosh\left(\sqrt{g\,\lambda}\,t\right)
  * -\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\,
- *  \sinh\left(\sqrt{g\,\lambda}\,t\right)\right]}{\lambda},\\
+ * \sinh\left(\sqrt{g\,\lambda}\,t\right)\right]}{\lambda},\\
  * \dot{z}_0>0,\;
  * t\leq\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
  * {\sqrt{g\,\lambda}}\Rightarrow & 

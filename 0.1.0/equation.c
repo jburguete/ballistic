@@ -254,7 +254,7 @@ equation_solution_0 (Equation * eq,     ///< Equation struct.
  * model characterized by the movement equation:
  * \f[\ddot{\vec{r}}=\vec{g}-\lambda\,\left(\dot{\vec{r}}-\vec{w}\right)\f]
  * with \f$\vec{g}=(0,\;0,\;-g)\f$ the gravity field vector,
- * \f$\vec{w}=(w_x,\;w_y\;0)\f$ the wind velocity vector and
+ * \f$\vec{w}=\left(w_x,\;w_y\;0\right)\f$ the wind velocity vector and
  * \f$\lambda\f$ a resistance coefficient.
  */
 static void
@@ -285,7 +285,7 @@ equation_acceleration_1 (Equation * eq, ///< Equation struct.
  * \f{equation}
  * \dot{\vec{r}}=\vec{w}
  * +\left(\dot{\vec{r}}_0-\vec{w}\right)\,\exp\left(-\lambda\,t\right)
- * +\vec{g}\,\left[1-\exp\left(-\lambda\,t\right)\right],
+ * +\frac{\vec{g}}{\lambda}\,\left[1-\exp\left(-\lambda\,t\right)\right],
  * \f}
  * \f{equation}
  * \vec{r}=\vec{r}_0+\left(\vec{w}+\frac{\vec{g}}{\lambda}\right)\,t

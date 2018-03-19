@@ -20,10 +20,23 @@ PARABOLIC TRAJECTORY
 _____________________
 
 The program solves the movement equation:
-[!img](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D%2C%5Cquadd%5Cvec%7Bg%7D%3D%280%2C%5C%3B0%2C%5C%3B-g%29)
+
+[!equation 1](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D%2C%5C%5C%0D%0A%5Cvec%7Bg%7D%3D%280%2C%5C%3B0%2C%5C%3B-g%29%2C)
 
 with g the gravity constant. The analytical solution is:
-[!img](http://latex.codecogs.com/svg.latex?%5Cdot%7B%5Cvec%7Br%7D%7D%3D%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cveg%7Bg%7D%5C%2Ct%5C%5C%0D%0A%5Cvec%7Br%7D%3D%5Cvec%7Br%7D_0%2B%5Cdot%7B%5Cvec%7Br%7D%7D_0%5C%2Ct%2B%5Cvec%7Bg%7D%5C%2Ct%5E2.)
+
+[!equation 2](http://latex.codecogs.com/svg.latex?%5Cdot%7B%5Cvec%7Br%7D%7D%3D%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cvec%7Bg%7D%5C%2Ct%2C%5C%5C%0D%0A%5Cvec%7Br%7D%3D%5Cvec%7Br%7D_0%2B%5Cdot%7B%5Cvec%7Br%7D%7D_0%5C%2Ct%2B%5Cfrac12%5C%2C%5Cvec%7Bg%7D%5C%2Ct%5E2.)
+
+1ST RESISTANCE MODEL
+____________________
+
+In this case the movement equation is:
+
+[!equation 3](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D-%5Clambda%5C%2C%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D-%5Cvec%7Bw%7D%5Cright%29%2C%5C%5C%0D%0A%5Cvec%7Bw%7D%3D%5Cleft%28w_x%2C%5C%3Bw_y%5C%3B0%5Cright%29%2C)
+
+with \lambda a resistance coefficient and w_x and w_y the wind velocity vector
+components. The analytical solution is:
+[!equation 4](http://latex.codecogs.com/svg.latex?http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D-%5Clambda%5C%2C%5Cleft%28%5Cdot%7B%5C)
 
 FILES
 -----

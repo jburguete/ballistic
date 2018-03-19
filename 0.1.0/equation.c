@@ -400,9 +400,9 @@ equation_acceleration_2 (Equation * eq, ///< Equation struct.
  * \dot{z}_0>0,\;
  * t\leq\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
  * {\sqrt{g\,\lambda}}\Rightarrow & 
- * z_0+\frac{\ln\left\{1-\sqrt{g\,\lambda}\,t
- * \,\sec\left[\arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)\right]\right\}}
- * {\lambda},\\
+ * z_0+\frac{1}{\lambda}\,\ln\left\{\frac{\cos\left[
+ * \arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)-\sqrt{g\,\lambda}\,t\right]}
+ * {\cos\left[\arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)\right]}\right\},\\
  * \dot{z}_0>0,\;
  * t>\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
  * {\sqrt{g\,\lambda}}\Rightarrow & 

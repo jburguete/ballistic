@@ -248,8 +248,8 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
                  Equation * eq) ///< Equation struct.
 {
   RungeKutta *rk;
-  Method *m;
-  long double t, dt, to, dto;
+  Method *m, *mrk;
+  long double t, dt, to, dto, et0o, et1o;
   unsigned int i, n;
 
 #if DEBUG_MULTI_STEPS
@@ -258,6 +258,7 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
 
   // variables backup 
   rk = MULTI_STEPS_RUNGE_KUTTA (ms);
+  mrk = RUNGE_KUTTA_METHOD (rk);
   m = MULTI_STEPS_METHOD (ms);
   memcpy (ro0, r0, 3 * sizeof (long double));
   memcpy (ro1, r1, 3 * sizeof (long double));
@@ -269,13 +270,28 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
     {
 
       // time step size
-      to = t;
-      if (t > 0.L && m->error_dt)
-        dt = method_dt (m, dt);
+      if (t > 0.L && mrk->error_dt)
+        {
+          dto = dt;
+          dt = method_dt (mrk, dt);
+
+          // revert the step if big error
+          if (dt < mrk->beta * dto)
+            {
+              ++i;
+              t = to;
+              mrk->et0 = et0o;
+              mrk->et1 = et1o;
+              memcpy (r0, ro0, 3 * sizeof (long double));
+              memcpy (r1, ro1, 3 * sizeof (long double));
+              memcpy (r2, ro2, 3 * sizeof (long double));
+            }
+        }
       else
         dt = equation_step_size (eq);
 
       // checking trajectory end
+      to = t;
       if (equation_land (eq, &t, &dt))
         goto end;
 #if DEBUG_MULTI_STEPS
@@ -294,8 +310,12 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
       runge_kutta_step (rk, eq, to, dt);
 
       // error estimate
-      if (m->error_dt)
-        runge_kutta_error (rk, dt);
+      if (mrk->error_dt)
+        {
+          et0o = mrk->et0;
+          et1o = mrk->et1;
+          runge_kutta_error (rk, dt);
+        }
     }
 
   // saving last step 
@@ -303,18 +323,37 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
   memcpy (m->r1[0], r1, 3 * sizeof (long double));
   memcpy (m->r2[0], r2, 3 * sizeof (long double));
 
+  // initing errors
+  m->et0 = mrk->et0;
+  m->et1 = mrk->et1;
+
   // temporal bucle
   while (1)
     {
 
       // time step size
-      to = t;
-      if (t > 0.L && m->error_dt)
-        dt = method_dt (m, dt);
+      if (m->error_dt)
+        {
+          dto = dt;
+          dt = method_dt (m, dt);
+
+          // revert the step if big error
+          if (dt < mrk->beta * dto)
+            {
+              ++i;
+              t = to;
+              m->et0 = et0o;
+              m->et1 = et1o;
+              memcpy (r0, ro0, 3 * sizeof (long double));
+              memcpy (r1, ro1, 3 * sizeof (long double));
+              memcpy (r2, ro2, 3 * sizeof (long double));
+            }
+        }
       else
         dt = equation_step_size (eq);
 
       // checking trajectory end
+      to = t;
       dto = dt;
       if (equation_land (eq, &t, &dt))
         break;
@@ -335,7 +374,11 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
 
       // error estimate
       if (m->error_dt)
-        multi_steps_error (ms, dt);
+        {
+          et0o = m->et0;
+          et1o = m->et1;
+          multi_steps_error (ms, dt);
+        }
     }
 end:
 #if DEBUG_MULTI_STEPS

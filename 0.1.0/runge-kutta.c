@@ -86,7 +86,7 @@ static const long double *rk_c2[2] = { rk_c2_1, rk_c2_2 };
 static const long double rk_t2[2] = { 1.L, 1.L };
 
 ///> array of 2nd order Runge-Kutta error coefficients.
-static const long double rk_e2[2] = { -0.5L, 0.5L };
+static const long double rk_e2[2] = { 0.5L, -0.5L };
 
 
 ///> 1st array of 3rd order Runge-Kutta a coefficients.
@@ -326,7 +326,7 @@ runge_kutta_run (RungeKutta * rk,       ///< RungeKutta struct.
                  Equation * eq) ///< Equation struct.
 {
   Method *m;
-  long double t, to, dt;
+  long double t, to, dt, dto, et0o, et1o;
 
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_run: start\n");
@@ -343,13 +343,27 @@ runge_kutta_run (RungeKutta * rk,       ///< RungeKutta struct.
     {
 
       // time step size
-      to = t;
       if (t > 0.L && m->error_dt)
-        dt = method_dt (m, dt);
+        {
+          dto = dt;
+          dt = method_dt (m, dt);
+
+          // revert the step if big error
+          if (dt < m->beta * dto)
+            {
+              t = to;
+              m->et0 = et0o;
+              m->et1 = et1o;
+              memcpy (r0, ro0, 3 * sizeof (long double));
+              memcpy (r1, ro1, 3 * sizeof (long double));
+              memcpy (r2, ro2, 3 * sizeof (long double));
+            }
+        }
       else
         dt = equation_step_size (eq);
 
       // checking trajectory end
+      to = t;
       if (equation_land (eq, &t, &dt))
         break;
 #if DEBUG_RUNGE_KUTTA
@@ -366,7 +380,11 @@ runge_kutta_run (RungeKutta * rk,       ///< RungeKutta struct.
 
       // error estimate
       if (m->error_dt)
-        runge_kutta_error (rk, dt);
+        {
+          et0o = m->et0;
+          et1o = m->et1;
+          runge_kutta_error (rk, dt);
+        }
     }
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_run: end\n");

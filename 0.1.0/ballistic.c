@@ -233,6 +233,14 @@ main (int argn,                 ///< number of arguments.
         default:
           kt *= convergence_factor;
         }
+      if (steps == 1)
+        RUNGE_KUTTA_METHOD (rk)->emt *= convergence_factor;
+      else
+        {
+          MULTI_STEPS_METHOD (ms)->emt *= convergence_factor;
+          RUNGE_KUTTA_METHOD (MULTI_STEPS_RUNGE_KUTTA (ms))->emt
+            *= convergence_factor;
+        }
     }
   fclose (file);
 #if DEBUG

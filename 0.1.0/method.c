@@ -73,6 +73,7 @@ method_init_variables (Method * m)      ///< Method struct.
       m->r1[i] = (long double *) malloc (3 * sizeof (long double));
       m->r2[i] = (long double *) malloc (3 * sizeof (long double));
     }
+  m->et0 = m->et1 = 0.L;
 }
 
 /**
@@ -86,9 +87,8 @@ method_dt (Method * m,          ///< Method struct.
            long double dt)      ///< actual time step size.
 {
   long double dt2;
-  dt2 = dt * fmaxl (m->beta,
-                    fminl (m->alpha,
-                           powl (m->emt * dt / m->e0, 1.L / m->order)));
+  dt2 = dt * fminl (m->alpha,
+                    powl (m->emt * dt / m->e0, 1.L / (m->order - 1.L)));
   return dt2;
 }
 

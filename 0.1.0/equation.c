@@ -46,8 +46,8 @@ long double r2[3];              ///< acceleration vector.
 long double ro0[3];             ///< backup of the position vector.
 long double ro1[3];             ///< backup of the velocity vector.
 long double ro2[3];             ///< backup of the acceleration vector.
-void (*equation_acceleration) (Equation * eq, long double *r0, long double *r1,
-                               long double *r2, long double t);
+void (*equation_acceleration) (Equation * eq, long double *r0,
+                               long double *r1, long double *r2, long double t);
 ///< pointer to the function to calculate the acceleration.
 void (*equation_solution) (Equation * eq, long double *r0, long double *r1,
                            long double t);
@@ -300,17 +300,19 @@ equation_solution_1 (Equation * eq,     ///< Equation struct.
                      long double t)     ///< time.
 {
   long double v[2];
+  long double li, gl, elt, k;
   v[0] = eq->v[0] - eq->w[0];
   v[1] = eq->v[1] - eq->w[1];
-  r1[0] = eq->w[0] + v[0] * expl (-eq->lambda * t);
-  r1[1] = eq->w[1] + v[1] * expl (-eq->lambda * t);
-  r1[2] = (eq->v[2] + G / eq->lambda) * expl (-eq->lambda * t) - G / eq->lambda;
-  r0[0] = eq->r[0] + eq->w[0] * t
-    + v[0] / eq->lambda * (1.L - expl (-eq->lambda * t));
-  r0[1] = eq->r[1] + eq->w[1] * t
-    + v[1] / eq->lambda * (1.L - expl (-eq->lambda * t));
-  r0[2] = eq->r[2] - G / eq->lambda * t
-    + (eq->v[2] + G / eq->lambda) / eq->lambda * (1.L - expl (-eq->lambda * t));
+  elt = expl (-eq->lambda * t);
+  r1[0] = eq->w[0] + v[0] * elt;
+  r1[1] = eq->w[1] + v[1] * elt;
+  li = 1.L / eq->lambda;
+  gl = G * li;
+  r1[2] = (eq->v[2] + gl) * elt - gl;
+  k = li * (1.L - elt);
+  r0[0] = eq->r[0] + eq->w[0] * t + v[0] * k;
+  r0[1] = eq->r[1] + eq->w[1] * t + v[1] * k;
+  r0[2] = eq->r[2] - gl * t + (eq->v[2] + gl) * k;
 }
 
 /**
@@ -479,8 +481,10 @@ equation_acceleration_3 (Equation * eq, ///< Equation struct.
                          long double *r2,       ///< acceleration vector.
                          long double t) ///< actual time.
 {
-  r2[0] = eq->w[0] * expl (-eq->lambda * t);
-  r2[1] = eq->w[1] * expl (-eq->lambda * t);
+  long double elt;
+  elt = expl (-eq->lambda * t);
+  r2[0] = eq->w[0] * elt;
+  r2[1] = eq->w[1] * elt;
   r2[2] = -G;
   ++nevaluations;
 }
@@ -512,13 +516,15 @@ equation_solution_3 (Equation * eq,     ///< Equation struct.
                      long double *r1,   ///< velocity vector.
                      long double t)     ///< time.
 {
-  r1[0] = eq->v[0] + eq->w[0] / eq->lambda * (1.L - expl (-eq->lambda * t));
-  r1[1] = eq->v[1] + eq->w[1] / eq->lambda * (1.L - expl (-eq->lambda * t));
+  long double li, k;
+  li = 1.L / eq->lambda;
+  k = li * (1.L - expl (-eq->lambda * t));
+  r1[0] = eq->v[0] + eq->w[0] * k;
+  r1[1] = eq->v[1] + eq->w[1] * k;
   r1[2] = eq->v[2] - G * t;
-  r0[0] = eq->r[0] + (eq->v[0] + eq->w[0] / eq->lambda) * t
-    - eq->w[0] / (eq->lambda * eq->lambda) * (1.L - expl (-eq->lambda * t));
-  r0[1] = eq->r[1] + (eq->v[1] + eq->w[1] / eq->lambda) * t
-    - eq->w[1] / (eq->lambda * eq->lambda) * (1.L - expl (-eq->lambda * t));
+  k *= li;
+  r0[0] = eq->r[0] + (eq->v[0] + eq->w[0] * li) * t - eq->w[0] * k;
+  r0[1] = eq->r[1] + (eq->v[1] + eq->w[1] * li) * t - eq->w[1] * k;
   r0[2] = eq->r[2] + t * (eq->v[2] - t * 0.5L * G);
 }
 
@@ -543,7 +549,7 @@ equation_solve (Equation * eq,  ///< Equation struct.
       t2 *= 2.L;
       equation_solution (eq, r02, r12, t2);
     }
-  for (i = 0; i < 128; ++i)
+  for (i = 0; i < 64; ++i)
     {
       t3 = 0.5L * (t1 + t2);
       equation_solution (eq, r02, r12, t3);

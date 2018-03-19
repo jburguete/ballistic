@@ -1,6 +1,6 @@
 OBJS = equation.o method.o runge-kutta.o multi-steps.o ballistic.o
 LIBS = -lm `pkg-config --libs gsl`
-CFLAGS = -c -O3 -march=native -Wall `pkg-config --cflags gsl`
+CFLAGS = -c -O3 -march=native -Wall -Wextra -Wpedantic `pkg-config --cflags gsl`
 CC = gcc -g -flto
 
 ballistic: $(OBJS)

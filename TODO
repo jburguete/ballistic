@@ -1,0 +1,8 @@
+- Add higher order methods
+- Add solid sphere ballistic equation
+- Support international messages with gettext
+- XML or JSON input files
+- Finalize the documentation of the 2nd resistance model solution
+- Parallelization with g_threads
+- Convergence of error time step size control methods based on maximum error  
+- Add user instructions and examples in the README

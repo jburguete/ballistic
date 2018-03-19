@@ -368,7 +368,46 @@ equation_acceleration_2 (Equation * eq, ///< Equation struct.
  * -\sqrt{g/\lambda}\,\sinh\left(\sqrt{g\,\lambda}\,t\right)}
  * {\sqrt{g/\lambda}\,\cosh\left(\sqrt{g\,\lambda}\,t\right)
  * -\dot{z}_0\,\sinh\left(\sqrt{g\,\lambda}\,t\right)},\\
- * \dot{z}_0>0\Rightarrow & 
+ * \dot{z}_0>0,\;
+ * t\leq\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
+ * {\sqrt{g\,\lambda}}\Rightarrow & 
+ * \sqrt{\frac{g}{\lambda}}
+ * \,\tan\left[\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)
+ * -\sqrt{g\,\lambda}\,t\right],\\
+ * \dot{z}_0>0,\;
+ * t>\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
+ * {\sqrt{g\,\lambda}}\Rightarrow & 
+ * -\sqrt{\frac{g}{\lambda}}\,\tanh\left[\sqrt{g\,\lambda}\,t
+ *  -\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)\right],
+ * \end{array}\right.
+ * \f}
+ * \f{equation}
+ * x=x_0+w_x\,t+\frac{\dot{x}_0-w_x}{\lambda\,\left|\dot{x}_0-w_x\right|}
+ * \,\ln\left(1+\lambda\,\left|\dot{x}_0-w_x\right|\,t\right),
+ * \f}
+ * \f{equation}
+ * y=y_0+w_y\,t+\frac{\dot{y}_0-w_y}{\lambda\,\left|\dot{y}_0-w_y\right|}
+ * \,\ln\left(1+\lambda\,\left|\dot{y}_0-w_y\right|\,t\right),
+ * \f}
+ * \f{equation}
+ * z=\left\{\begin{array}{cl}
+ * \dot{z}_0\leq 0\Rightarrow & z_0
+ * -\frac{\ln\left[\cosh\left(\sqrt{g\,\lambda}\,t\right)
+ * -\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\,
+ *  \sinh\left(\sqrt{g\,\lambda}\,t\right)\right]}{\lambda},\\
+ * \dot{z}_0>0,\;
+ * t\leq\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
+ * {\sqrt{g\,\lambda}}\Rightarrow & 
+ * z_0+\frac{\ln\left\{1-\sqrt{g\,\lambda}\,t
+ * \,\sec\left[\arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)\right]\right\}}
+ * {\lambda},\\
+ * \dot{z}_0>0,\;
+ * t>\frac{\arctan\left(\dot{z}_0\,\sqrt{\frac{\lambda}{g}}\right)}
+ * {\sqrt{g\,\lambda}}\Rightarrow & 
+ * z_0-\frac{\ln\left\{
+ * \cos\left[\arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)\right]
+ * \,\cosh\left[\sqrt{g\,\lambda}\,t
+ * -\arctan\left(\dot{z}_0\,\sqrt{\lambda/g}\right)\right]\right\}}{\lambda}
  * \end{array}\right.
  * \f}
  */
@@ -400,26 +439,25 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
       - 1.L / eq->lambda * logl (1.L + eq->lambda * fabsl (v[1]) * t);
   gl = sqrtl (G * eq->lambda);
   g_l = sqrtl (G / eq->lambda);
+  r0[2] = eq->r[2];
   if (eq->v[2] <= 0.L)
     {
       r1[2] = g_l * (eq->v[2] * coshl (gl * t) - g_l * sinhl (gl * t))
         / (g_l * coshl (gl * t) - eq->v[2] * sinhl (gl * t));
-      r0[2] = eq->r[2]
-        - logl (coshl (gl * t) - eq->v[2] * sinh (gl * t) / g_l) / eq->lambda;
+      r0[2] -=
+        logl (coshl (gl * t) - eq->v[2] * sinh (gl * t) / g_l) / eq->lambda;
       return;
     }
   tc = atanl (eq->v[2] / g_l) / gl;
   if (t <= tc)
     {
       r1[2] = tanl (atanl (eq->v[2] / g_l) - gl * t) * g_l;
-      r0[2] = eq->r[2] + logl (cosl (atanl (eq->v[2] / g_l) - gl * t)
-                               / cosl (atanl (eq->v[2] / g_l))) / eq->lambda;
+      r0[2] += logl (1.L - gl * t / cosl (atanl (eq->v[2] / g_l))) / eq->lambda;
       return;
     }
   t -= tc;
   r1[2] = -g_l * tanhl (gl * t);
-  r0[2] = eq->r[2] - (logl (cosl (atanl (eq->v[2] / g_l))) +
-                      logl (coshl (gl * t))) / eq->lambda;
+  r0[2] -= logl (cosl (atanl (eq->v[2] / g_l)) * coshl (gl * t)) / eq->lambda;
 }
 
 /**

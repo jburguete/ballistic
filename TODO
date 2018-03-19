@@ -1,8 +1,12 @@
-- Add higher order methods
-- Add solid sphere ballistic equation
-- Support international messages with gettext
-- XML or JSON input files
-- Finalize the documentation of the 2nd resistance model solution
-- Parallelization with g_threads
+High priority
 - Convergence of error time step size control methods based on maximum error  
 - Add user instructions and examples in the README
+
+Medium priority
+- Add higher order methods
+- Add solid sphere ballistic equation
+- Parallelization with g_threads
+
+Low priority
+- Support international messages with gettext
+- XML or JSON input files

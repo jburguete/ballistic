@@ -66,3 +66,4 @@ sed -i "s/land = 2/land = 1/g" tmp
 sed -i "s/rk = 2/rk = 1/g" tmp
 ./ballistic tmp out2-ms-3-1-1-0
 rm tmp
+gnuplot plot

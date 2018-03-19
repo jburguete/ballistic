@@ -59,7 +59,7 @@ In this case the movement equation is:
 
 The analytical solution is:
 
-[equation 8](http://latex.codecogs.com/svg.latex?%5Cdot%7B%5Cvec%7Br%7D%7D%3D%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cvec%7Bg%7D%5C%2Ct%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%7D%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29right%5D%2C%5C%5C%0D%0A%5Cvec%7Br%7D%3D%5Cvec%7Br%7D_0%2B%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%7D%5Cright%29%5C%2Ct%2B%5Cfrac12%5C%2C%5Cvec%7Bg%7D%5C%2Ct%5E2%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%5E2%7D%5C%2C%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%5Cright%5D.%0D%0A)
+[equation 8](http://latex.codecogs.com/svg.latex?%5Cdot%7B%5Cvec%7Br%7D%7D%3D%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cvec%7Bg%7D%5C%2Ct%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%7D%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%5Cright%5D%2C%5C%5C%0D%0A%5Cvec%7Br%7D%3D%5Cvec%7Br%7D_0%2B%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D_0%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%7D%5Cright%29%5C%2Ct%2B%5Cfrac12%5C%2C%5Cvec%7Bg%7D%5C%2Ct%5E2%2B%5Cfrac%7B%5Cvec%7Bw%7D%7D%7B%5Clambda%5E2%7D%5C%2C%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%5Cright%5D.)
 
 FILES
 -----

@@ -283,9 +283,9 @@ equation_acceleration_1 (Equation * eq, ///< Equation struct.
  * \f$\lambda\f$ a resistance coefficient.
  * The analytical solution is:
  * \f{equation}
- * \dot{\vec{r}}=\vec{w}
- * +\left(\dot{\vec{r}}_0-\vec{w}\right)\,\exp\left(-\lambda\,t\right)
- * +\frac{\vec{g}}{\lambda}\,\left[1-\exp\left(-\lambda\,t\right)\right],
+ * \dot{\vec{r}}=\dot{\vec{r}}_0\,\exp\left(-\lambda\,t\right)
+ * +\left(\vec{w}+\frac{\vec{g}}{\lambda}\right)
+ * \,\left[1-\exp\left(-\lambda\,t\right)\right],
  * \f}
  * \f{equation}
  * \vec{r}=\vec{r}_0+\left(\vec{w}+\frac{\vec{g}}{\lambda}\right)\,t

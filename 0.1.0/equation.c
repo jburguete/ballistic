@@ -319,9 +319,9 @@ equation_solution_1 (Equation * eq,     ///< Equation struct.
  * This function calculates the acceleration vector on a resistance model
  * model characterized by the movement equations:
  * \f[\left.\begin{array}{r}
- * \ddot{x}=-\lambda\,\left|\dot{x}-w_x\right|\,\left(\dot{x}-w_x\right)\\
- * \ddot{y}=-\lambda\,\left|\dot{y}-w_y\right|\,\left(\dot{y}-w_y\right)\\
- * \ddot{z}=-g-\lambda\,\left|\dot{z}\right|\,\dot{z}
+ * \ddot{x}=-\lambda\,\left|\dot{x}-w_x\right|\,\left(\dot{x}-w_x\right),\\
+ * \ddot{y}=-\lambda\,\left|\dot{y}-w_y\right|\,\left(\dot{y}-w_y\right),\\
+ * \ddot{z}=-g-\lambda\,\left|\dot{z}\right|\,\dot{z},
  * \end{array}\right\}\f]
  * with g the gravitational constant, \f$w_x\f$ and \f$w_y\f$ the wind velocity
  * vector components and \f$\lambda\f$ a resistance coefficient.

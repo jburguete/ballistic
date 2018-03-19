@@ -44,7 +44,7 @@ ____________________
 
 The movement equations are:
 
-[equation 5](http://latex.codecogs.com/svg.latex?%5Cddot%7Bx%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bx%7D-w_x%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7Bx%7D-w_x%5Cright%29.%5C%5C%0D%0A%5Cddot%7By%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7By%7D-w_y%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7By%7D-w_y%5Cright%29.%5C%5C%0D%0A%5Cddot%7Bz%7D%3D-g-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bz%7D%5Cright%7C%5C%2C%5Cdot%7Bz%7D.%0D%0A)
+[equation 5](http://latex.codecogs.com/svg.latex?%5Cddot%7Bx%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bx%7D-w_x%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7Bx%7D-w_x%5Cright%29%2C%5C%5C%0D%0A%5Cddot%7By%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7By%7D-w_y%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7By%7D-w_y%5Cright%29%2C%5C%5C%0D%0A%5Cddot%7Bz%7D%3D-g-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bz%7D%5Cright%7C%5C%2C%5Cdot%7Bz%7D%2C)
 
 The analytical solution is:
 

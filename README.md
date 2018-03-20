@@ -19,7 +19,9 @@ Four equations with analytical solution are implemented.
 PARABOLIC TRAJECTORY
 _____________________
 
-The program solves the movement equation:
+This is the most simple ballistic model. The movement equations system is linear
+and 2nd or higher order methods provide the exact solution. The movement
+equations can be expressed in vectorial form as:
 
 ![equation 1](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D%2C%5C%5C%0D%0A%5Cvec%7Bg%7D%3D%280%2C%5C%3B0%2C%5C%3B-g%29%2C)
 
@@ -30,19 +32,22 @@ with g the gravity constant. The analytical solution is:
 1ST RESISTANCE MODEL
 ____________________
 
-In this case the movement equation is:
+This is a non-linear equation system that can be considered as an aproximation
+to the movement of solids at low velocities. The movement equations system is:
 
 ![equation 3](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D-%5Clambda%5C%2C%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D-%5Cvec%7Bw%7D%5Cright%29%2C%5C%5C%0D%0A%5Cvec%7Bw%7D%3D%5Cleft%28w_x%2C%5C%3Bw_y%5C%3B0%5Cright%29%2C)
 
 with λ a resistance coefficient and w<sub>x</sub> and w<sub>y</sub> the wind
-velocity vector components. The analytical solution is:
+velocity vector components. Considering λm w<sub>x</sub> and w<sub>y</sub> 
+constants, the system has the following analytical solution:
 
 ![equation 4](http://latex.codecogs.com/svg.latex?%5Cdot%7B%5Cvec%7Br%7D%7D%3D%5Cdot%7B%5Cvec%7Br%7D%7D_0%5C%2C%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%2B%5Cleft%28%5Cvec%7Bw%7D%2B%5Cfrac%7B%5Cvec%7Bg%7D%7D%7B%5Clambda%7D%5Cright%29%5C%2C%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%5Cright%5D%2C%5C%5C%0D%0A%5Cvec%7Br%7D%3D%5Cvec%7Br%7D_0%2B%5Cleft%28%5Cvec%7Bw%7D%2B%5Cfrac%7B%5Cvec%7Bg%7D%7D%7B%5Clambda%7D%5Cright%29%5C%2Ct%2B%5Cfrac%7B%5Cdot%7B%5Cvec%7Br%7D%7D_0-%5Cvec%7Bw%7D-%5Cvec%7Bg%7D%2F%5Clambda%7D%7B%5Clambda%7D%5C%2C%5Cleft%5B1-%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29%5Cright%5D.%0D%0A)
 
 2ND RESISTANCE MODEL
 ____________________
 
-The movement equations are:
+This case provides an equation systems very similar to the movement equations of
+solids in turbulent flow. The movement equations are:
 
 ![equation 5](http://latex.codecogs.com/svg.latex?%5Cddot%7Bx%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bx%7D-w_x%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7Bx%7D-w_x%5Cright%29%2C%5C%5C%0D%0A%5Cddot%7By%7D%3D-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7By%7D-w_y%5Cright%7C%5C%2C%5Cleft%28%5Cdot%7By%7D-w_y%5Cright%29%2C%5C%5C%0D%0A%5Cddot%7Bz%7D%3D-g-%5Clambda%5C%2C%5Cleft%7C%5Cdot%7Bz%7D%5Cright%7C%5C%2C%5Cdot%7Bz%7D%2C)
 
@@ -57,7 +62,8 @@ The analytical solution is:
 FORCED MODEL
 ____________
 
-In this case the movement equation is:
+In this case a force varying in time is added to check the numerical methods
+behavior in equations depending on the time. The movement equation is:
 
 ![equation 7](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D%2B%5Cvec%7Bw%7D%5C%2C%5Cexp%5Cleft%28-%5Clambda%5C%2Ct%5Cright%29)
 

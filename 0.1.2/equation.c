@@ -279,7 +279,7 @@ equation_acceleration_1 (Equation * eq, ///< Equation struct.
  * \ddot{\vec{r}}=\vec{g}-\lambda\,\left(\dot{\vec{r}}-\vec{w}\right),
  * \f}
  * with \f$\vec{g}=(0,\;0,\;-g)\f$ the gravity field vector,
- * \f$\vec{w}=(w_x,\;w_y\;0)\f$ the wind velocity vector and
+ * \f$\vec{w}=(w_x,\;w_y,\;0)\f$ the wind velocity vector and
  * \f$\lambda\f$ a resistance coefficient.
  * The analytical solution is:
  * \f{equation}

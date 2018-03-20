@@ -120,6 +120,7 @@ main (int argn,                 ///< number of arguments.
   MultiSteps ms[1];
   RungeKutta rk[1];
   Equation eq[1];
+  Method *m;
   gsl_rng *rng;
   FILE *file;
   long double sr0[3], sr1[3];
@@ -155,6 +156,7 @@ main (int argn,                 ///< number of arguments.
           return 4;
         }
       runge_kutta_init_variables (rk);
+      m = RUNGE_KUTTA_METHOD (rk);
     }
   else
     {
@@ -164,6 +166,7 @@ main (int argn,                 ///< number of arguments.
           return 4;
         }
       multi_steps_init_variables (ms);
+      m = MULTI_STEPS_METHOD (ms);
     }
   fclose (file);
   rng = gsl_rng_alloc (gsl_rng_taus);
@@ -223,8 +226,8 @@ main (int argn,                 ///< number of arguments.
 #endif
       l2r0 = sqrtl (l2r0 / ntrajectories);
       l2r1 = sqrtl (l2r1 / ntrajectories);
-      fprintf (file, "%.19Le %lu %.19Le %.19Le %.19Le %.19Le\n",
-               kt, nevaluations, l0r0, l2r0, l0r1, l2r1);
+      fprintf (file, "%lu %.19Le %.19Le %.19Le %.19Le %.19Le %.19Le\n",
+               nevaluations, l0r0, l2r0, l0r1, l2r1, kt, m->emt);
       switch (eq->size_type)
         {
         case 0:
@@ -233,14 +236,10 @@ main (int argn,                 ///< number of arguments.
         default:
           kt *= convergence_factor;
         }
-      if (steps == 1)
-        RUNGE_KUTTA_METHOD (rk)->emt *= convergence_factor;
-      else
-        {
-          MULTI_STEPS_METHOD (ms)->emt *= convergence_factor;
-          RUNGE_KUTTA_METHOD (MULTI_STEPS_RUNGE_KUTTA (ms))->emt
-            *= convergence_factor;
-        }
+      m->emt *= convergence_factor;
+      if (steps > 1)
+        RUNGE_KUTTA_METHOD (MULTI_STEPS_RUNGE_KUTTA (ms))->emt
+          *= convergence_factor;
     }
   fclose (file);
 #if DEBUG

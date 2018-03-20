@@ -130,6 +130,7 @@ method_read (Method * m,        ///< Method struct.
   switch (m->error_dt)
     {
     case 0:
+	  m->emt = 0.L;
       break;
     case 1:
       if (fscanf (file, "%*s%*s%Lf", &m->alpha) != 1)

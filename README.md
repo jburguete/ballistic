@@ -35,7 +35,7 @@ ____________________
 This is a non-linear equation system that can be considered as an aproximation
 to the movement of solids at low velocities. The movement equations system is:
 
-![equation 3](http://latex.codecogs.com/svg.latex?https://latex.codecogs.com/gif.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D-%5Clambda%5C%2C%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D-%5Cvec%7Bw%7D%5Cright%29%2C%5C%5C%20%5Cvec%7Bw%7D%3D%28w_x%2C%5C%3Bw_y%2C%5C%3B0%29%2C)
+![equation 3](http://latex.codecogs.com/svg.latex?%5Cddot%7B%5Cvec%7Br%7D%7D%3D%5Cvec%7Bg%7D-%5Clambda%5C%2C%5Cleft%28%5Cdot%7B%5Cvec%7Br%7D%7D-%5Cvec%7Bw%7D%5Cright%29%2C%5C%5C%20%5Cvec%7Bw%7D%3D%28w_x%2C%5C%3Bw_y%2C%5C%3B0%29%2C)
 
 with λ a resistance coefficient and w<sub>x</sub> and w<sub>y</sub> the wind
 velocity vector components. Considering λm w<sub>x</sub> and w<sub>y</sub> 

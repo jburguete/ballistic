@@ -45,17 +45,11 @@ OF SUCH DAMAGE.
 
 #define DEBUG_RUNGE_KUTTA 0     ///< macro to debug the Runge-Kutta functions.
 
-///> 1st array of 1st order Runge-Kutta a coefficients.
-static const long double rk_a1_1[1] = { 1.L };
+///> 1st array of 1st order Runge-Kutta b coefficients.
+static const long double rk_b1_1[1] = { 1.L };
 
-///> 1st array of 1st order Runge-Kutta c coefficients.
-static const long double rk_c1_1[1] = { 1.L };
-
-///> matrix of 1st order Runge-Kutta a coefficients.
-static const long double *rk_a1[1] = { rk_a1_1 };
-
-///> matrix of 1st order Runge-Kutta c coefficients.
-static const long double *rk_c1[1] = { rk_c1_1 };
+///> matrix of 1st order Runge-Kutta b coefficients.
+static const long double *rk_b1[1] = { rk_b1_1 };
 
 ///> array of 1st order Runge-Kutta t coefficients.
 static const long double rk_t1[1] = { 1.L };
@@ -64,23 +58,14 @@ static const long double rk_t1[1] = { 1.L };
 static const long double rk_e1[1] = { -1.L };
 
 
-///> 1st array of 1st order Runge-Kutta a coefficients.
-static const long double rk_a2_1[1] = { 1.L };
+///> 1st array of 1st order Runge-Kutta b coefficients.
+static const long double rk_b2_1[1] = { 1.L };
 
-///> 1st array of 1st order Runge-Kutta c coefficients.
-static const long double rk_c2_1[1] = { 1.L };
+///> 2nd array of 2nd order Runge-Kutta b coefficients.
+static const long double rk_b2_2[2] = { 0.5L, 0.5L };
 
-///> 2nd array of 2nd order Runge-Kutta a coefficients.
-static const long double rk_a2_2[2] = { 0.5L, 0.5L };
-
-///> 2nd array of 2nd order Runge-Kutta c coefficients.
-static const long double rk_c2_2[2] = { 0.L, 1.L };
-
-///> matrix of 2nd order Runge-Kutta a coefficients.
-static const long double *rk_a2[2] = { rk_a2_1, rk_a2_2 };
-
-///> matrix of 2nd order Runge-Kutta c coefficients.
-static const long double *rk_c2[2] = { rk_c2_1, rk_c2_2 };
+///> matrix of 2nd order Runge-Kutta b coefficients.
+static const long double *rk_b2[2] = { rk_b2_1, rk_b2_2 };
 
 ///> array of 2nd order Runge-Kutta t coefficients.
 static const long double rk_t2[2] = { 1.L, 1.L };
@@ -89,29 +74,17 @@ static const long double rk_t2[2] = { 1.L, 1.L };
 static const long double rk_e2[2] = { 0.5L, -0.5L };
 
 
-///> 1st array of 3rd order Runge-Kutta a coefficients.
-static const long double rk_a3_1[1] = { 1.L };
+///> 1st array of 3rd order Runge-Kutta b coefficients.
+static const long double rk_b3_1[1] = { 1.L };
 
-///> 1st array of 3rd order Runge-Kutta c coefficients.
-static const long double rk_c3_1[1] = { 1.L };
+///> 2nd array of 3rd order Runge-Kutta b coefficients.
+static const long double rk_b3_2[2] = { 0.25L, 0.25L };
 
-///> 2nd array of 3rd order Runge-Kutta a coefficients.
-static const long double rk_a3_2[2] = { 0.75L, 0.25L };
+///> 3rd array of 3rd order Runge-Kutta b coefficients.
+static const long double rk_b3_3[3] = { 1.L / 6.L, 1.L / 6.L, 2.L / 3.L };
 
-///> 2nd array of 3rd order Runge-Kutta c coefficients.
-static const long double rk_c3_2[2] = { 0.L, 1.L };
-
-///> 3rd array of 3rd order Runge-Kutta a coefficients.
-static const long double rk_a3_3[3] = { 1.L / 3.L, 0.L, 2.L / 3.L };
-
-///> 3rd array of 3rd order Runge-Kutta c coefficients.
-static const long double rk_c3_3[3] = { 0.L, 0.L, 1.L };
-
-///> matrix of 3rd order Runge-Kutta a coefficients.
-static const long double *rk_a3[3] = { rk_a3_1, rk_a3_2, rk_a3_3 };
-
-///> matrix of 3rd order Runge-Kutta c coefficients.
-static const long double *rk_c3[3] = { rk_c3_1, rk_c3_2, rk_c3_3 };
+///> matrix of 3rd order Runge-Kutta b coefficients.
+static const long double *rk_b3[3] = { rk_b3_1, rk_b3_2, rk_b3_3 };
 
 ///> array of 3rd order Runge-Kutta t coefficients.
 static const long double rk_t3[3] = { 1.L, 0.5L, 1.L };
@@ -120,35 +93,21 @@ static const long double rk_t3[3] = { 1.L, 0.5L, 1.L };
 static const long double rk_e3[3] = { 1.L / 12.L, 1.L / 12.L, -1.L / 6.L };
 
 
-///> 1st array of 4th order Runge-Kutta a coefficients.
-static const long double rk_a4_1[1] = { 1.L };
+///> 1st array of 4th order Runge-Kutta b coefficients.
+static const long double rk_b4_1[1] = { 0.5L };
 
-///> 1st array of 4th order Runge-Kutta c coefficients.
-static const long double rk_c4_1[1] = { 0.5L };
+///> 2nd array of 4th order Runge-Kutta b coefficients.
+static const long double rk_b4_2[2] = { 0.L, 0.5L };
 
-///> 2nd array of 4th order Runge-Kutta a coefficients.
-static const long double rk_a4_2[2] = { 0.5L, 0.5L };
+///> 3rd array of 4th order Runge-Kutta b coefficients.
+static const long double rk_b4_3[3] = { 0.L, 0.L, 1.L };
 
-///> 2nd array of 4th order Runge-Kutta c coefficients.
-static const long double rk_c4_2[2] = { -0.5L, 1.L };
+///> 4th array of 4th order Runge-Kutta b coefficients.
+static const long double rk_b4_4[4] =
+  { 1.L / 6.L, 1.L / 3.L, 1.L / 3.L, 1.L / 6.L };
 
-///> 3rd array of 4th order Runge-Kutta a coefficients.
-static const long double rk_a4_3[3] = { 0.5L, -0.5L, 1.L };
-
-///> 3rd array of 4th order Runge-Kutta c coefficients.
-static const long double rk_c4_3[3] = { 0.5L, 1.L, 1.L };
-
-///> 4th array of 4th order Runge-Kutta a coefficients.
-static const long double rk_a4_4[4] =
-  { 5.L / 12.L, 0.25L, 1.L / 6.L, 1.L / 6.L };
-///> 4th array of 4th order Runge-Kutta c coefficients.
-static const long double rk_c4_4[4] = { 0.1L, 1.L, 1.L, 1.L };
-
-///> matrix of 4th order Runge-Kutta a coefficients.
-static const long double *rk_a4[4] = { rk_a4_1, rk_a4_2, rk_a4_3, rk_a4_4 };
-
-///> matrix of 4th order Runge-Kutta c coefficients.
-static const long double *rk_c4[4] = { rk_c4_1, rk_c4_2, rk_c4_3, rk_c4_4 };
+///> matrix of 4th order Runge-Kutta b coefficients.
+static const long double *rk_b4[4] = { rk_b4_1, rk_b4_2, rk_b4_3, rk_b4_4 };
 
 ///> array of 4th order Runge-Kutta t coefficients.
 static const long double rk_t4[4] = { 0.5L, 0.5L, 1.L, 1.L };
@@ -161,8 +120,7 @@ void
 runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 {
   method_init (RUNGE_KUTTA_METHOD (rk), 1, 1);
-  rk->a = rk_a1;
-  rk->c = rk_c1;
+  rk->b = rk_b1;
   rk->t = rk_t1;
   rk->e = rk_e1;
 }
@@ -174,8 +132,7 @@ void
 runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 {
   method_init (RUNGE_KUTTA_METHOD (rk), 2, 2);
-  rk->a = rk_a2;
-  rk->c = rk_c2;
+  rk->b = rk_b2;
   rk->t = rk_t2;
   rk->e = rk_e2;
 }
@@ -187,8 +144,7 @@ void
 runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 {
   method_init (RUNGE_KUTTA_METHOD (rk), 3, 3);
-  rk->a = rk_a3;
-  rk->c = rk_c3;
+  rk->b = rk_b3;
   rk->t = rk_t3;
   rk->e = rk_e3;
 }
@@ -200,8 +156,7 @@ void
 runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 {
   method_init (RUNGE_KUTTA_METHOD (rk), 4, 4);
-  rk->a = rk_a4;
-  rk->c = rk_c4;
+  rk->b = rk_b4;
   rk->t = rk_t4;
 }
 
@@ -224,8 +179,7 @@ runge_kutta_step (RungeKutta * rk,      ///< RungeKutta struct.
                   long double dt)       ///< time step size.
 {
   Method *m;
-  const long double *a;
-  const long double *c;
+  const long double *b;
   unsigned int i, j, n;
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_step: start\n");
@@ -243,28 +197,21 @@ runge_kutta_step (RungeKutta * rk,      ///< RungeKutta struct.
   n = m->nsteps;
   for (i = 1; i <= n; ++i)
     {
-      a = rk->a[i - 1];
-      c = rk->c[i - 1];
+      b = rk->b[i - 1];
 #if DEBUG_RUNGE_KUTTA
       for (j = 0; j < i; ++j)
-        fprintf (stderr, "runge_kutta_step: a%u-%u=%Lg\n", i, j, a[j]);
-      for (j = 0; j < i; ++j)
-        fprintf (stderr, "runge_kutta_step: c%u-%u=%Lg\n", i, j, c[j]);
+        fprintf (stderr, "runge_kutta_step: b%u-%u=%Lg\n", i, j, b[j]);
 #endif
-      m->r0[i][0] = a[0] * (m->r0[0][0] + dt * c[0] * m->r1[0][0]);
-      m->r0[i][1] = a[0] * (m->r0[0][1] + dt * c[0] * m->r1[0][1]);
-      m->r0[i][2] = a[0] * (m->r0[0][2] + dt * c[0] * m->r1[0][2]);
-      m->r1[i][0] = a[0] * (m->r1[0][0] + dt * c[0] * m->r2[0][0]);
-      m->r1[i][1] = a[0] * (m->r1[0][1] + dt * c[0] * m->r2[0][1]);
-      m->r1[i][2] = a[0] * (m->r1[0][2] + dt * c[0] * m->r2[0][2]);
-      for (j = 1; j < i; ++j)
+      memcpy (m->r0[i], r0, 3 * sizeof (long double));
+      memcpy (m->r1[i], r1, 3 * sizeof (long double));
+      for (j = 0; j < i; ++j)
         {
-          m->r0[i][0] += a[j] * (m->r0[j][0] + dt * c[j] * m->r1[j][0]);
-          m->r0[i][1] += a[j] * (m->r0[j][1] + dt * c[j] * m->r1[j][1]);
-          m->r0[i][2] += a[j] * (m->r0[j][2] + dt * c[j] * m->r1[j][2]);
-          m->r1[i][0] += a[j] * (m->r1[j][0] + dt * c[j] * m->r2[j][0]);
-          m->r1[i][1] += a[j] * (m->r1[j][1] + dt * c[j] * m->r2[j][1]);
-          m->r1[i][2] += a[j] * (m->r1[j][2] + dt * c[j] * m->r2[j][2]);
+          m->r0[i][0] += dt * b[j] * m->r1[j][0];
+          m->r0[i][1] += dt * b[j] * m->r1[j][1];
+          m->r0[i][2] += dt * b[j] * m->r1[j][2];
+          m->r1[i][0] += dt * b[j] * m->r2[j][0];
+          m->r1[i][1] += dt * b[j] * m->r2[j][1];
+          m->r1[i][2] += dt * b[j] * m->r2[j][2];
         }
       equation_acceleration (eq, m->r0[i], m->r1[i], m->r2[i],
                              t + rk->t[i - 1] * dt);

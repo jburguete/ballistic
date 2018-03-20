@@ -43,8 +43,7 @@ OF SUCH DAMAGE.
 typedef struct
 {
   Method method[1];             ///< method struct.
-  const long double **a;        ///< matrix of a-coefficients.
-  const long double **c;        ///< matrix of c-coefficients.
+  const long double **b;        ///< matrix of b-coefficients.
   const long double *t;         ///< array of t-coefficients.
   const long double *e;         ///< array of error coefficients.
 } RungeKutta;

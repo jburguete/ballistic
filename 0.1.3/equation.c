@@ -211,11 +211,15 @@ solve_cubic (long double a,     ///< a equation coefficient.
  * with \f$\vec{g}=(0,\;0,\;-g)\f$ the gravity field vector.
  */
 static void
-equation_acceleration_0 (Equation * eq, ///< Equation struct.
-                         long double *r0,       ///< position vector.
-                         long double *r1,       ///< velocity vector.
+equation_acceleration_0 (Equation * eq __attribute__ ((unused)),
+                         ///< Equation struct.
+                         long double *r0 __attribute__ ((unused)),
+                         ///< position vector.
+                         long double *r1 __attribute__ ((unused)),
+                         ///< velocity vector.
                          long double *r2,       ///< acceleration vector.
-                         long double t) ///< actual time.
+                         long double t __attribute__ ((unused)))
+  ///< actual time.
 {
   r2[0] = r2[1] = 0.L;
   r2[2] = -G;
@@ -259,10 +263,12 @@ equation_solution_0 (Equation * eq,     ///< Equation struct.
  */
 static void
 equation_acceleration_1 (Equation * eq, ///< Equation struct.
-                         long double *r0,       ///< position vector.
+                         long double *r0 __attribute__ ((unused)),
+                         ///< position vector.
                          long double *r1,       ///< velocity vector.
                          long double *r2,       ///< acceleration vector.
-                         long double t) ///< actual time.
+                         long double t __attribute__ ((unused)))
+  ///< actual time.
 {
   r2[0] = -eq->lambda * (r1[0] - eq->w[0]);
   r2[1] = -eq->lambda * (r1[1] - eq->w[1]);
@@ -330,10 +336,12 @@ equation_solution_1 (Equation * eq,     ///< Equation struct.
  */
 static void
 equation_acceleration_2 (Equation * eq, ///< Equation struct.
-                         long double *r0,       ///< position vector.
+                         long double *r0 __attribute__ ((unused)),
+                         ///< position vector.
                          long double *r1,       ///< velocity vector.
                          long double *r2,       ///< acceleration vector.
-                         long double t) ///< actual time.
+                         long double t __attribute__ ((unused)))
+  ///< actual time.
 {
   long double v[2];
   v[0] = r1[0] - eq->w[0];
@@ -482,8 +490,10 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
  */
 static void
 equation_acceleration_3 (Equation * eq, ///< Equation struct.
-                         long double *r0,       ///< position vector.
-                         long double *r1,       ///< velocity vector.
+                         long double *r0 __attribute__ ((unused)),
+                         ///< position vector.
+                         long double *r1 __attribute__ ((unused)),
+                         ///< velocity vector.
                          long double *r2,       ///< acceleration vector.
                          long double t) ///< actual time.
 {
@@ -575,7 +585,8 @@ equation_solve (Equation * eq,  ///< Equation struct.
  * \return time step size.
  */
 static long double
-equation_step_size_0 (Equation * eq)    ///< Equation struct.
+equation_step_size_0 (Equation * eq __attribute__ ((unused)))
+///< Equation struct.
 {
   return dt;
 }
@@ -637,7 +648,8 @@ equation_land_0 (Equation * eq, ///< Equation struct.
  * \return 1 on finish, 0 on continuing.
  */
 static int
-equation_land_1 (Equation * eq, ///< Equation struct.
+equation_land_1 (Equation * eq __attribute__ ((unused)),
+                 ///< Equation struct.
                  long double *t,        ///< time.
                  long double *dt)       ///< time step size.
 {
@@ -665,7 +677,8 @@ equation_land_1 (Equation * eq, ///< Equation struct.
  * \return 1 on finish, 0 on continuing.
  */
 static int
-equation_land_2 (Equation * eq, ///< Equation struct.
+equation_land_2 (Equation * eq __attribute__ ((unused)),
+                 ///< Equation struct.
                  long double *t,        ///< time.
                  long double *dt)       ///< time step size.
 {
@@ -693,7 +706,8 @@ equation_land_2 (Equation * eq, ///< Equation struct.
  * \return 1 on finish, 0 on continuing.
  */
 static int
-equation_land_3 (Equation * eq, ///< Equation struct.
+equation_land_3 (Equation * eq __attribute__ ((unused)),
+                 ///< Equation struct.
                  long double *t,        ///< time.
                  long double *dt)       ///< time step size.
 {

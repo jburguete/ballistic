@@ -42,7 +42,8 @@ OF SUCH DAMAGE.
 #include "equation.h"
 #include "method.h"
 
-#define DEBUG_METHOD 0          ///< macro to debug the numerical method functions.
+#define DEBUG_METHOD 0
+///< macro to debug the numerical method functions.
 
 /**
  * Function to init the numerical method.
@@ -130,7 +131,7 @@ method_read (Method * m,        ///< Method struct.
   switch (m->error_dt)
     {
     case 0:
-	  m->emt = 0.L;
+      m->emt = 0.L;
       break;
     case 1:
       if (fscanf (file, "%*s%*s%Lf", &m->alpha) != 1)

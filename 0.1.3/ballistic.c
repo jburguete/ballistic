@@ -242,6 +242,7 @@ main (int argn,                 ///< number of arguments.
           *= convergence_factor;
     }
   fclose (file);
+  printf ("Time = %.19Le\n", t);
 #if DEBUG
   fprintf (stderr, "main: deleting method\n");
 #endif

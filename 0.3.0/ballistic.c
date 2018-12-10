@@ -40,12 +40,15 @@ OF SUCH DAMAGE.
 #include <math.h>
 #include <time.h>
 #include <gsl/gsl_rng.h>
+#include <libxml/parser.h>
+#include "config.h"
+#include "utils.h"
 #include "equation.h"
 #include "method.h"
 #include "runge-kutta.h"
 #include "multi-steps.h"
 
-#define DEBUG_BALLISTIC 1           ///< macro to debug the ballistic functions.
+#define DEBUG_BALLISTIC 1       ///< macro to debug the ballistic functions.
 
 long double convergence_factor;
 ///< convergence factor.
@@ -120,13 +123,13 @@ print_error (char *label,       ///< label.
 }
 
 /**
- * Main function
+ * Function to perform a convergence analysis of a method.
  *
- * \return 0 on success, error code otherwise.
+ * \return 0 on success, error code on error.
  */
 int
-main (int argn,                 ///< number of arguments.
-      char **argc)              ///< array of argument chars.
+convergence_run (char *input,   ///< input file name.
+                 char *output)  ///< results file name.
 {
   MultiSteps ms[1];
   RungeKutta rk[1];
@@ -138,17 +141,9 @@ main (int argn,                 ///< number of arguments.
   long double t, l0r0, l2r0, l0r1, l2r1, e;
   unsigned int i, j;
 #if DEBUG_BALLISTIC
-  fprintf (stderr, "main: start\n");
+  fprintf (stderr, "convergence_run: start\n");
 #endif
-  if (argn != 3)
-    {
-      printf ("The syntax is:\n./runge-kutta input_file output_file\n");
-      return 1;
-    }
-#if DEBUG_BALLISTIC
-  fprintf (stderr, "main: reading data\n");
-#endif
-  file = fopen (argc[1], "r");
+  file = fopen (input, "r");
   if (!file)
     {
       printf ("Unable to open the input file\n");
@@ -157,7 +152,7 @@ main (int argn,                 ///< number of arguments.
   if (!read_data (file, eq))
     return 3;
 #if DEBUG_BALLISTIC
-  fprintf (stderr, "main: initing method\n");
+  fprintf (stderr, "convergence_run: initing method\n");
 #endif
   if (steps == 1)
     {
@@ -181,7 +176,7 @@ main (int argn,                 ///< number of arguments.
     }
   fclose (file);
   rng = gsl_rng_alloc (gsl_rng_taus);
-  file = fopen (argc[2], "w");
+  file = fopen (output, "w");
   for (j = 0; j < convergence; ++j)
     {
       gsl_rng_set (rng, 0l);
@@ -190,23 +185,23 @@ main (int argn,                 ///< number of arguments.
       for (i = 0; i < ntrajectories; ++i)
         {
 #if DEBUG_BALLISTIC
-          fprintf (stderr, "main: initing equation data\n");
+          fprintf (stderr, "convergence_run: initing equation data\n");
 #endif
           equation_init (eq, rng);
 #if DEBUG_BALLISTIC
-          fprintf (stderr, "main: initing variables\n");
+          fprintf (stderr, "convergence_run: initing variables\n");
 #endif
           equation_solution (eq, r0, r1, 0.);
           equation_acceleration (eq, r0, r1, r2, 0.L);
 #if DEBUG_BALLISTIC
-          fprintf (stderr, "main: running\n");
+          fprintf (stderr, "convergence_run: running\n");
 #endif
           if (steps == 1)
             t = runge_kutta_run (rk, eq);
           else
             t = multi_steps_run (ms, eq);
 #if DEBUG_BALLISTIC
-          fprintf (stderr, "main: solutions\n");
+          fprintf (stderr, "convergence_run: solutions\n");
           print_solution ("Numerical solution", r0, r1);
           printf ("Time = %.19Le\n", t);
 #endif
@@ -233,7 +228,7 @@ main (int argn,                 ///< number of arguments.
 
         }
 #if DEBUG_BALLISTIC
-      fprintf (stderr, "main: saving results\n");
+      fprintf (stderr, "convergence_run: saving results\n");
 #endif
       l2r0 = sqrtl (l2r0 / ntrajectories);
       l2r1 = sqrtl (l2r1 / ntrajectories);
@@ -255,7 +250,7 @@ main (int argn,                 ///< number of arguments.
   fclose (file);
   printf ("Time = %.19Le\n", t);
 #if DEBUG_BALLISTIC
-  fprintf (stderr, "main: deleting method\n");
+  fprintf (stderr, "convergence_run: deleting method\n");
 #endif
   if (steps == 1)
     runge_kutta_delete (rk);
@@ -263,7 +258,119 @@ main (int argn,                 ///< number of arguments.
     multi_steps_delete (ms);
   gsl_rng_free (rng);
 #if DEBUG_BALLISTIC
-  fprintf (stderr, "main: end\n");
+  fprintf (stderr, "convergence_run: end\n");
 #endif
   return 0;
+}
+
+/**
+ * Function to calculate a ballistic trajectory.
+ *
+ * \return 0 on success, error code on error.
+ */
+int
+ballistic_run (xmlDoc * doc,    ///< input file name.
+               char *output)    ///< results file name.
+{
+  MultiSteps ms[1];
+  RungeKutta rk[1];
+  Equation eq[1];
+  xmlNode *node;
+  gsl_rng *rng;
+  FILE *file;
+  long double sr0[3], sr1[3];
+  long double t;
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: start\n");
+#endif
+  ms->steps = 0;
+  node = xmlDocGetRootElement (doc);
+  if (!xmlStrcmp (node->name, XML_RUNGE_KUTTA))
+    {
+      if (!runge_kutta_read_xml (rk, node))
+        return 4;
+      runge_kutta_init_variables (rk);
+    }
+  else if (!xmlStrcmp (node->name, XML_MULTI_STEPS))
+    {
+      if (!multi_steps_read_xml (ms, node) || !multi_steps_init (ms, ms->steps))
+        return 4;
+      multi_steps_init_variables (ms);
+    }
+  fclose (file);
+  file = fopen (output, "w");
+  gsl_rng_set (rng, 0l);
+  nevaluations = 0l;
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: initing equation data\n");
+#endif
+  equation_init (eq, rng);
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: initing variables\n");
+#endif
+  equation_solution (eq, r0, r1, 0.);
+  equation_acceleration (eq, r0, r1, r2, 0.L);
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: running\n");
+#endif
+  if (!ms->steps)
+    t = runge_kutta_run (rk, eq);
+  else
+    t = multi_steps_run (ms, eq);
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: solutions\n");
+  print_solution ("Numerical solution", r0, r1);
+  printf ("Time = %.19Le\n", t);
+#endif
+  switch (eq->land_type)
+    {
+    case 0:
+      equation_solution (eq, sr0, sr1, eq->tf);
+      break;
+    default:
+      t = equation_solve (eq, sr0, sr1);
+    }
+#if DEBUG_BALLISTIC
+  print_solution ("Analytical solution", sr0, sr1);
+  printf ("Time = %.19Le\n", t);
+  print_error ("Position error", r0, sr0);
+  print_error ("Velocity error", r1, sr1);
+#endif
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: saving results\n");
+#endif
+  fclose (file);
+  printf ("Time = %.19Le\n", t);
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: deleting method\n");
+#endif
+  if (!ms->steps)
+    runge_kutta_delete (rk);
+  else
+    multi_steps_delete (ms);
+  gsl_rng_free (rng);
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "ballistic_run: end\n");
+#endif
+  return 0;
+}
+
+/**
+ * Main function
+ *
+ * \return 0 on success, error code otherwise.
+ */
+int
+main (int argn,                 ///< number of arguments.
+      char **argc)              ///< array of argument chars.
+{
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "main: start\n");
+#endif
+  if (argn != 3)
+    {
+      printf ("The syntax is:\n./runge-kutta input_file output_file\n");
+      return 1;
+    }
+  return convergence_run (argc[1], argc[2]);
 }

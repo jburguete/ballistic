@@ -39,7 +39,10 @@ OF SUCH DAMAGE.
 #include <string.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+#include <libxml/parser.h>
 #include <glib.h>
+#include "config.h"
+#include "utils.h"
 #include "equation.h"
 #include "method.h"
 
@@ -55,12 +58,12 @@ method_init (Method * m,        ///< Method struct.
              unsigned int order)        ///< order of accuracy.
 {
 #if DEBUG_METHOD
-	fprintf (stderr, "method_init: start\n");
+  fprintf (stderr, "method_init: start\n");
 #endif
   m->nsteps = nsteps;
   m->order = order;
 #if DEBUG_METHOD
-	fprintf (stderr, "method_init: end\n");
+  fprintf (stderr, "method_init: end\n");
 #endif
 }
 
@@ -72,7 +75,7 @@ method_init_variables (Method * m)      ///< Method struct.
 {
   unsigned int i, n;
 #if DEBUG_METHOD
-	fprintf (stderr, "method_init_variables: start\n");
+  fprintf (stderr, "method_init_variables: start\n");
 #endif
   n = m->nsteps + 1;
   m->r0 = (long double **) g_slice_alloc (n * sizeof (long double *));
@@ -86,7 +89,7 @@ method_init_variables (Method * m)      ///< Method struct.
     }
   m->et0 = m->et1 = 0.L;
 #if DEBUG_METHOD
-	fprintf (stderr, "method_init_variables: end\n");
+  fprintf (stderr, "method_init_variables: end\n");
 #endif
 }
 
@@ -102,13 +105,13 @@ method_dt (Method * m,          ///< Method struct.
 {
   long double dt2;
 #if DEBUG_METHOD
-	fprintf (stderr, "method_dt: start\n");
+  fprintf (stderr, "method_dt: start\n");
 #endif
   dt2 = dt * fminl (m->alpha,
                     powl (m->emt * dt / m->e0, 1.L / (m->order - 1.L)));
 #if DEBUG_METHOD
-	fprintf (stderr, "method_dt: dt=%Lg\n", dt2);
-	fprintf (stderr, "method_dt: end\n");
+  fprintf (stderr, "method_dt: dt=%Lg\n", dt2);
+  fprintf (stderr, "method_dt: end\n");
 #endif
   return dt2;
 }
@@ -181,6 +184,56 @@ fail:
 #if DEBUG_METHOD
   fprintf (stderr, "method_read: error\n");
   fprintf (stderr, "method_read: end\n");
+#endif
+  return 0;
+}
+
+/**
+ * Function to read the numerical method data on a XML node.
+ *
+ * \return 1 on success, 0 on error.
+ */
+int
+method_read_xml (Method * m,    ///< Method struct.
+                 xmlNode * node)        ///< XML node.
+{
+  int error_code;
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read_xml: start\n");
+#endif
+  m->error_dt = xml_node_get_uint (node, XML_TIME_STEP, &error_code);
+  if (error_code)
+    goto fail;
+  switch (m->error_dt)
+    {
+    case 0:
+      m->emt = 0.L;
+      break;
+    case 1:
+      m->alpha = xml_node_get_float (node, XML_ALPHA, &error_code);
+      if (error_code)
+        goto fail;
+      m->beta = xml_node_get_float (node, XML_BETA, &error_code);
+      if (error_code)
+        goto fail;
+      m->emt = xml_node_get_float (node, XML_ERROR_TIME, &error_code);
+      if (error_code)
+        goto fail;
+      break;
+    default:
+      goto fail;
+    }
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read_xml: success\n");
+  fprintf (stderr, "method_read_xml: end\n");
+#endif
+  return 1;
+
+fail:
+  printf ("Error reading method data\n");
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read_xml: error\n");
+  fprintf (stderr, "method_read_xml: end\n");
 #endif
   return 0;
 }

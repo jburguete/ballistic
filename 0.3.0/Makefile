@@ -1,10 +1,11 @@
 .PHONY: clean strip
 
-PGOOBJS = equation.pgo method.pgo runge-kutta.pgo multi-steps.pgo ballistic.pgo
-OBJS = equation.o method.o runge-kutta.o multi-steps.o ballistic.o
-LIBS = -lm `pkg-config --libs gsl glib-2.0`
-CFLAGS = `pkg-config --cflags gsl glib-2.0` -c -O3 -march=native -Wall -Wextra \
-	-Wpedantic -D_FORTIFY_SOURCE=2
+PGOOBJS = utils.pgo equation.pgo method.pgo runge-kutta.pgo multi-steps.pgo \
+	ballistic.pgo
+OBJS = utils.o equation.o method.o runge-kutta.o multi-steps.o ballistic.o
+LIBS = -lm `pkg-config --libs gsl libxml-2.0 glib-2.0`
+CFLAGS = `pkg-config --cflags gsl libxml-2.0 glib-2.0` -c -O3 -march=native \
+	-Wall -Wextra -Wpedantic -D_FORTIFY_SOURCE=2
 PGOGEN = -fprofile-generate
 PGOUSE = -fprofile-use -fprofile-correction
 CC = gcc -g -flto
@@ -19,22 +20,29 @@ ballisticpgo: $(PGOOBJS)
 	./ballisticpgo case-s out
 	#sh scriptpgo.sh
 
-equation.pgo: equation.c equation.h Makefile
+utils.pgo: utils.c utils.h config.h Makefile
+	$(CC) $(CFLAGS) $(PGOGEN) utils.c -o utils.pgo
+
+equation.pgo: equation.c equation.h utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) equation.c -o equation.pgo
 
-method.pgo: method.c method.h equation.h Makefile
+method.pgo: method.c method.h equation.h utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) method.c -o method.pgo
 
-runge-kutta.pgo: runge-kutta.c runge-kutta.h method.h equation.h Makefile
+runge-kutta.pgo: runge-kutta.c runge-kutta.h method.h equation.h utils.h \
+	config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) runge-kutta.c -o runge-kutta.pgo
 
 multi-steps.pgo: multi-steps.c multi-steps.h runge-kutta.h method.h equation.h \
-	Makefile
+	utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) multi-steps.c -o multi-steps.pgo
 
 ballistic.pgo: ballistic.c multi-steps.h runge-kutta.h method.h equation.h \
-	Makefile
+	utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) ballistic.c -o ballistic.pgo
+
+utils.o: ballisticpgo utils.gcda
+	$(CC) $(CFLAGS) $(PGOUSE) utils.c -o utils.o
 
 equation.o: ballisticpgo equation.gcda
 	$(CC) $(CFLAGS) $(PGOUSE) equation.c -o equation.o

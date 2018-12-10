@@ -39,6 +39,9 @@ OF SUCH DAMAGE.
 #include <string.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+#include <libxml/parser.h>
+#include "config.h"
+#include "utils.h"
 #include "equation.h"
 #include "method.h"
 #include "runge-kutta.h"
@@ -120,14 +123,14 @@ void
 runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_1: start\n");
+  fprintf (stderr, "runge_kutta_init_1: start\n");
 #endif
   method_init (RUNGE_KUTTA_METHOD (rk), 1, 1);
   rk->b = rk_b1;
   rk->t = rk_t1;
   rk->e = rk_e1;
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_1: end\n");
+  fprintf (stderr, "runge_kutta_init_1: end\n");
 #endif
 }
 
@@ -138,14 +141,14 @@ void
 runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_2: start\n");
+  fprintf (stderr, "runge_kutta_init_2: start\n");
 #endif
   method_init (RUNGE_KUTTA_METHOD (rk), 2, 2);
   rk->b = rk_b2;
   rk->t = rk_t2;
   rk->e = rk_e2;
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_2: end\n");
+  fprintf (stderr, "runge_kutta_init_2: end\n");
 #endif
 }
 
@@ -156,14 +159,14 @@ void
 runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_3: start\n");
+  fprintf (stderr, "runge_kutta_init_3: start\n");
 #endif
   method_init (RUNGE_KUTTA_METHOD (rk), 3, 3);
   rk->b = rk_b3;
   rk->t = rk_t3;
   rk->e = rk_e3;
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_3: end\n");
+  fprintf (stderr, "runge_kutta_init_3: end\n");
 #endif
 }
 
@@ -174,13 +177,13 @@ void
 runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_4: start\n");
+  fprintf (stderr, "runge_kutta_init_4: start\n");
 #endif
   method_init (RUNGE_KUTTA_METHOD (rk), 4, 4);
   rk->b = rk_b4;
   rk->t = rk_t4;
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_4: end\n");
+  fprintf (stderr, "runge_kutta_init_4: end\n");
 #endif
 }
 
@@ -191,11 +194,11 @@ void
 runge_kutta_init_variables (RungeKutta * rk)
 {
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_variables: start\n");
+  fprintf (stderr, "runge_kutta_init_variables: start\n");
 #endif
   method_init_variables (RUNGE_KUTTA_METHOD (rk));
 #if DEBUG_RUNGE_KUTTA
-	fprintf (stderr, "runge_kutta_init_variables: end\n");
+  fprintf (stderr, "runge_kutta_init_variables: end\n");
 #endif
 }
 
@@ -429,6 +432,59 @@ fail:
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read: error\n");
   fprintf (stderr, "runge_kutta_read: end\n");
+#endif
+  return 0;
+}
+
+/**
+ * Function to read the Runge-Kutta method data on a XML node.
+ *
+ * \return 1 on success, 0 on error.
+ */
+int
+runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
+                      xmlNode * node)   ///< XML node.
+{
+  int error_code;
+  unsigned int type;
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read_xml: start\n");
+#endif
+  if (xmlStrcmp (node->name, XML_RUNGE_KUTTA))
+    goto fail;
+  type = xml_node_get_uint (node, XML_TYPE, &error_code);
+  if (error_code)
+    goto fail;
+  if (!method_read_xml (RUNGE_KUTTA_METHOD (rk), node))
+    goto fail;
+  switch (type)
+    {
+    case 1:
+      runge_kutta_init_1 (rk);
+      break;
+    case 2:
+      runge_kutta_init_2 (rk);
+      break;
+    case 3:
+      runge_kutta_init_3 (rk);
+      break;
+    case 4:
+      runge_kutta_init_4 (rk);
+      break;
+    default:
+      goto fail;
+    }
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read_xml: success\n");
+  fprintf (stderr, "runge_kutta_read_xml: end\n");
+#endif
+  return 1;
+
+fail:
+  printf ("Error reading Runge-Kutta data\n");
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read_xml: error\n");
+  fprintf (stderr, "runge_kutta_read_xml: end\n");
 #endif
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
-Ballistic: a software to benchmam ballistic models.
+Ballistic: a software to benchmark ballistic models.
 
 AUTHORS: Javier Burguete Tolosa.
 
@@ -28,39 +28,36 @@ OF SUCH DAMAGE.
 */
 
 /**
- * \file method.h
- * \brief Header file to define the base of numerical method data and functions.
+ * \file runge-kutta.h
+ * \brief Header file to define the Runge-Kutta method data and functions.
  * \author Javier Burguete Tolosa.
  * \copyright Copyright 2018.
  */
-#ifndef METHOD__H
-#define METHOD__H 1
+#ifndef RUNGE_KUTTA__H
+#define RUNGE_KUTTA__H 1
 
 /**
- * \struct Method
- * \brief struct to define the base of a numerical method.
+ * \struct RungeKutta
+ * \brief struct to define a Runge-Kutta method.
  */
 typedef struct
 {
-  long double **r0;             ///< array of position vectors.
-  long double **r1;             ///< array of velocity vectors.
-  long double **r2;             ///< array of acceleration vectors.
-  long double e0;               ///< step position error.
-  long double e1;               ///< step velocity error.
-  long double et0;              ///< total position error.
-  long double et1;              ///< total velocity error.
-  long double emt;              ///< maximum error per time.
-  long double alpha;            ///< error time step size alpha parameter.
-  long double beta;             ///< error time step size beta parameter.
-  unsigned int nsteps;          ///< number of steps.
-  unsigned int order;           ///< order.
-  unsigned int error_dt;        ///< type of error time step size control. 
-} Method;
+  Method method[1];             ///< method struct.
+  const long double **b;        ///< matrix of b-coefficients.
+  const long double *t;         ///< array of t-coefficients.
+  const long double *e;         ///< array of error coefficients.
+} RungeKutta;
 
-void method_init (Method * m, unsigned int nsteps, unsigned int order);
-void method_init_variables (Method * m);
-long double method_dt (Method * m, long double dt);
-void method_delete (Method * m);
-int method_read (Method * m, FILE * file);
+#define RUNGE_KUTTA_METHOD(rk) ((Method *)rk->method)
+///< macro to access to Method struct data on a RungeKutta struct.
+
+void runge_kutta_init_variables (RungeKutta * rk);
+void runge_kutta_step (RungeKutta * rk, Equation * eq, long double t,
+                       long double dt);
+void runge_kutta_error (RungeKutta * rk, long double dt);
+long double runge_kutta_run (RungeKutta * rk, Equation * eq);
+void runge_kutta_delete (RungeKutta * rk);
+int runge_kutta_read (RungeKutta * rk, FILE * file);
+int runge_kutta_read_xml (RungeKutta * rk, xmlNode * node);
 
 #endif

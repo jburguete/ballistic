@@ -39,12 +39,15 @@ OF SUCH DAMAGE.
 #include <string.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+#include <libxml/parser.h>
+#include "config.h"
+#include "utils.h"
 #include "equation.h"
 #include "method.h"
 #include "runge-kutta.h"
 #include "multi-steps.h"
 
-#define DEBUG_MULTI_STEPS 0     ///< macro to debug the multi-steps functions.
+#define DEBUG_MULTI_STEPS 1     ///< macro to debug the multi-steps functions.
 
 ///> array of a coefficients of the 2nd order multi-steps method. 
 const long double ms_a2[3] = { 0.75L, 0.L, 0.25L };
@@ -82,7 +85,7 @@ multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
 {
   Method *m;
 #if DEBUG_MULTI_STEPS
-	fprintf (stderr, "multi_steps_init: start\n");
+  fprintf (stderr, "multi_steps_init: start\n");
 #endif
   m = MULTI_STEPS_METHOD (ms);
   switch (nsteps)
@@ -105,13 +108,13 @@ multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
       printf ("Error reading multi-steps data\n");
 #if DEBUG_MULTI_STEPS
       fprintf (stderr, "multi_steps_init: error\n");
-	    fprintf (stderr, "multi_steps_init: end\n");
+      fprintf (stderr, "multi_steps_init: end\n");
 #endif
       return 0;
     }
 #if DEBUG_MULTI_STEPS
-	fprintf (stderr, "multi_steps_init: success\n");
-	fprintf (stderr, "multi_steps_init: end\n");
+  fprintf (stderr, "multi_steps_init: success\n");
+  fprintf (stderr, "multi_steps_init: end\n");
 #endif
   return 1;
 }
@@ -123,12 +126,12 @@ void
 multi_steps_init_variables (MultiSteps * ms)
 {
 #if DEBUG_MULTI_STEPS
-	fprintf (stderr, "multi_steps_init_variables: start\n");
+  fprintf (stderr, "multi_steps_init_variables: start\n");
 #endif
   runge_kutta_init_variables (MULTI_STEPS_RUNGE_KUTTA (ms));
   method_init_variables (MULTI_STEPS_METHOD (ms));
 #if DEBUG_MULTI_STEPS
-	fprintf (stderr, "multi_steps_init_variables: end\n");
+  fprintf (stderr, "multi_steps_init_variables: end\n");
 #endif
 }
 
@@ -429,20 +432,53 @@ int
 multi_steps_read (MultiSteps * ms,      ///< MultiSteps struct.
                   FILE * file)  ///< input file.
 {
-	int e;
+  int e;
 #if DEBUG_MULTI_STEPS
   fprintf (stderr, "multi_steps_read: start\n");
 #endif
   if (!method_read (MULTI_STEPS_METHOD (ms), file))
     e = 0;
-	else
+  else
     e = runge_kutta_read (MULTI_STEPS_RUNGE_KUTTA (ms), file);
 #if DEBUG_MULTI_STEPS
-	if (e)
+  if (e)
     fprintf (stderr, "multi_steps_read: success\n");
-	else
+  else
     fprintf (stderr, "multi_steps_read: error\n");
   fprintf (stderr, "multi_steps_read: end\n");
 #endif
-	return e;
+  return e;
+}
+
+/**
+ * Function to read on a XML node the multi-steps method input data.
+ *
+ * \return 1 on success, 0 on error.
+ */
+int
+multi_steps_read_xml (MultiSteps * ms,  ///< MultiSteps struct.
+                      xmlNode * node)   ///< XML node.
+{
+  int e, error_code;
+#if DEBUG_MULTI_STEPS
+  fprintf (stderr, "multi_steps_read_xml: start\n");
+#endif
+  if (xmlStrcmp (node->name, XML_MULTI_STEPS) || !node->children)
+    e = 0;
+  else
+    {
+      ms->steps = xml_node_get_uint (node, XML_STEPS, &error_code);
+      if (error_code || !method_read_xml (MULTI_STEPS_METHOD (ms), node))
+        e = 0;
+      else
+        e = runge_kutta_read_xml (MULTI_STEPS_RUNGE_KUTTA (ms), node->children);
+    }
+#if DEBUG_MULTI_STEPS
+  if (e)
+    fprintf (stderr, "multi_steps_read: success\n");
+  else
+    fprintf (stderr, "multi_steps_read: error\n");
+  fprintf (stderr, "multi_steps_read: end\n");
+#endif
+  return e;
 }

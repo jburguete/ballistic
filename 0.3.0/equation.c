@@ -38,6 +38,9 @@ OF SUCH DAMAGE.
 #include <string.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+#include <libxml/parser.h>
+#include "config.h"
+#include "utils.h"
 #include "equation.h"
 
 #define DEBUG_EQUATION 1        ///< macro to debug the equation functions.
@@ -66,196 +69,6 @@ unsigned long int nevaluations;
 ///< number of evaluations of the acceleration function.
 
 /**
- * Function to calculate the distance between two vectors.
- *
- * \return vectors distance.
- */
-long double
-distance (long double *r1,      ///< 1st vector.
-          long double *r2)      ///< 2nd vector.
-{
-  long double d, dr[3];
-#if DEBUG_EQUATION
-	fprintf (stderr, "distance: start\n");
-	fprintf (stderr, "distance: x1=%Lg y1=%Lg z1=%Lg\n", r1[0], r1[1], r1[2]);
-	fprintf (stderr, "distance: x2=%Lg y2=%Lg z2=%Lg\n", r2[0], r2[1], r2[2]);
-#endif
-  dr[0] = r1[0] - r2[0];
-  dr[1] = r1[1] - r2[1];
-  dr[2] = r1[2] - r2[2];
-  d = sqrtl (dr[0] * dr[0] + dr[1] * dr[1] + dr[2] * dr[2]);
-#if DEBUG_EQUATION
-	fprintf (stderr, "distance: d=%Lg\n", d);
-	fprintf (stderr, "distance: end\n");
-#endif
-  return d;
-}
-
-/**
- * Function to calculate the solution of a reduced 2nd order equation.
- *
- * This function calculates the solution of a reduced 2nd order equation in the
- * form:
- * \f[x^2+a\,x+b=0\f]
- * in the interval \f$x\in\left[x_1,\;x_2\right]\f$.
- *
- * \return solution value. If the equation can not be solved or the solution is
- * not in the interval the value is undetermined.
- */
-long double
-solve_quadratic_reduced (long double a, ///< a equation coefficient.
-                         long double b, ///< b equation coefficient.
-                         long double x1,        ///< lower solution limit.
-                         long double x2)        ///< higher solution limit.
-{
-  long double a2, k, x;
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_quadratic_reduced: start\n");
-	fprintf (stderr, "solve_quadratic_reduced: a=%Lg b=%Lg\n", a, b);
-	fprintf (stderr, "solve_quadratic_reduced: x1=%Lg x2=%Lg\n", x1, x2);
-#endif
-  a2 = -0.5L * a;
-  k = sqrtl (a2 * a2 - b);
-  x = a2 + k;
-  if (x < x1 || x > x2)
-    x = a2 - k;
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_quadratic_reduced: x=%Lg\n", x);
-	fprintf (stderr, "solve_quadratic_reduced: end\n");
-#endif
-  return x;
-}
-
-/**
- * Function to calculate the solution of a 2nd order equation.
- *
- * This function calculates the solution of a 2nd order equation in the
- * form:
- * \f[a\,x^2+b\,x+c=0\f]
- * in the interval \f$x\in\left[x_1,\;x_2\right]\f$.
- *
- * \return solution value. If the equation can not be solved or the solution is
- * not in the interval the value is undetermined.
- */
-long double
-solve_quadratic (long double a, ///< a equation coefficient.
-                 long double b, ///< b equation coefficient.
-                 long double c, ///< c equation coefficient.
-                 long double x1,        ///< lower solution limit.
-                 long double x2)        ///< higher solution limit.
-{
-	long double x;
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_quadratic: start\n");
-	fprintf (stderr, "solve_quadratic: a=%Lg b=%Lg c=%Lg\n", a, b, c);
-	fprintf (stderr, "solve_quadratic: x1=%Lg x2=%Lg\n", x1, x2);
-#endif
-  if (a == 0.L)
-    x = -c / b;
-	else
-		x = solve_quadratic_reduced (b / a, c / a, x1, x2);
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_quadratic: x=%Lg\n", x);
-	fprintf (stderr, "solve_quadratic: end\n");
-#endif
-	return x;
-}
-
-/**
- * Function to calculate the solution of a reduced 3rd order equation.
- *
- * This function calculates the solution of a reduced 3rd order equation in the
- * form:
- * \f[x^3+a\,x^2+b\,x+c=0\f]
- * in the interval \f$x\in\left[x_1,\;x_2\right]\f$.
- *
- * \return solution value. If the equation can not be solved or the solution is
- * not in the interval the value is undetermined.
- */
-long double
-solve_cubic_reduced (long double a,     ///< a equation coefficient.
-                     long double b,     ///< b equation coefficient.
-                     long double c,     ///< c equation coefficient.
-                     long double x1,    ///< lower solution limit.
-                     long double x2)    ///< higher solution limit.
-{
-  long double k0, k1, k2;
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_cubic_reduced: start\n");
-	fprintf (stderr, "solve_cubic_reduced: a=%Lg b=%Lg c=%Lg\n", a, b, c);
-	fprintf (stderr, "solve_cubic_reduced: x1=%Lg x2=%Lg\n", x1, x2);
-#endif
-  a /= 3.L;
-  k0 = a * a;
-  k1 = b / 3.L - k0;
-  k0 = (b * a - c) / 2.L - a * k0;
-  k2 = k1 * k1 * k1 + k0 * k0;
-  if (k2 < 0.L)
-    {
-      k1 = sqrtl (-k1);
-      k0 = acosl (k0 / (k1 * k1 * k1)) / 3.L;
-      k1 *= 2.L;
-      k2 = k1 * cosl (k0) - a;
-      if (k2 < x1 || k2 > x2)
-        {
-          k2 = k1 * cosl (k0 + 2.L * M_PIl / 3.L) - a;
-          if (k2 < x1 || k2 > x2)
-            k2 = k1 * cosl (k0 - 2.L * M_PIl / 3.L) - a;
-        }
-    }
-  else
-    {
-      k1 = sqrtl (k2);
-      k2 = k0 + k1;
-      k2 = cbrtl (k2);
-      k0 -= k1;
-      k2 += cbrtl (k0);
-      k2 -= a;
-    }
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_cubic_reduced: x=%Lg\n", k2);
-	fprintf (stderr, "solve_cubic_reduced: end\n");
-#endif
-  return k2;
-}
-
-/**
- * Function to calculate the solution of a 3rd order equation.
- *
- * This function calculates the solution of a 3rd order equation in the
- * form:
- * \f[a\,x^3+b\,x^2+c\,x+d=0\f]
- * in the interval \f$x\in\left[x_1,\;x_2\right]\f$.
- *
- * \return solution value. If the equation can not be solved or the solution is
- * not in the interval the value is undetermined.
- */
-long double
-solve_cubic (long double a,     ///< a equation coefficient.
-             long double b,     ///< b equation coefficient.
-             long double c,     ///< c equation coefficient.
-             long double d,     ///< d equation coefficient.
-             long double x1,    ///< lower solution limit.
-             long double x2)    ///< higher solution limit.
-{
-	long double x;
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_cubic: start\n");
-	fprintf (stderr, "solve_cubic: a=%Lg b=%Lg c=%Lg d=%Lg\n", a, b, c, d);
-	fprintf (stderr, "solve_cubic: x1=%Lg x2=%Lg\n", x1, x2);
-#endif
-  if (a == 0.L)
-    x = solve_quadratic (b, c, d, x1, x2);
-	else
-		x = solve_cubic_reduced (b / a, c / a, d / a, x1, x2);
-#if DEBUG_EQUATION
-	fprintf (stderr, "solve_cubic: x=%Lg\n", x);
-	fprintf (stderr, "solve_cubic: end\n");
-#endif
-	return x;
-}
-
-/**
  * Function to calculate the acceleration on non-resitance model.
  *
  * This function calculates the acceleration vector on a non-resistance
@@ -275,15 +88,15 @@ equation_acceleration_0 (Equation * eq __attribute__ ((unused)),
   ///< actual time.
 {
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_0: start\n");
+  fprintf (stderr, "equation_acceleration_0: start\n");
 #endif
   r2[0] = r2[1] = 0.L;
   r2[2] = -G;
   ++nevaluations;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_0: ax=%Lg ay=%Lg az=%Lg\n",
-			              r2[0], r2[1], r2[2]);
-	fprintf (stderr, "equation_acceleration_0: end\n");
+  fprintf (stderr, "equation_acceleration_0: ax=%Lg ay=%Lg az=%Lg\n",
+           r2[0], r2[1], r2[2]);
+  fprintf (stderr, "equation_acceleration_0: end\n");
 #endif
 }
 
@@ -305,20 +118,20 @@ equation_solution_0 (Equation * eq,     ///< Equation struct.
                      long double t)     ///< time.
 {
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_0: start\n");
+  fprintf (stderr, "equation_solution_0: start\n");
 #endif
   r1[0] = eq->v[0];
   r1[1] = eq->v[1];
-  r1[2] = eq->v[2] - G * t;
+  r1[2] = eq->v[2] - eq->g * t;
   r0[0] = eq->r[0] + eq->v[0] * t;
   r0[1] = eq->r[1] + eq->v[1] * t;
   r0[2] = eq->r[2] + t * (eq->v[2] - t * 0.5L * G);
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_0: vx=%Lg vy=%Lg vz=%Lg\n",
-			              r1[0], r1[1], r1[2]);
-	fprintf (stderr, "equation_solution_0: x=%Lg y=%Lg z=%Lg\n",
-			              r0[0], r0[1], r0[2]);
-	fprintf (stderr, "equation_solution_0: end\n");
+  fprintf (stderr, "equation_solution_0: vx=%Lg vy=%Lg vz=%Lg\n",
+           r1[0], r1[1], r1[2]);
+  fprintf (stderr, "equation_solution_0: x=%Lg y=%Lg z=%Lg\n",
+           r0[0], r0[1], r0[2]);
+  fprintf (stderr, "equation_solution_0: end\n");
 #endif
 }
 
@@ -342,16 +155,16 @@ equation_acceleration_1 (Equation * eq, ///< Equation struct.
   ///< actual time.
 {
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_1: start\n");
+  fprintf (stderr, "equation_acceleration_1: start\n");
 #endif
   r2[0] = -eq->lambda * (r1[0] - eq->w[0]);
   r2[1] = -eq->lambda * (r1[1] - eq->w[1]);
-  r2[2] = -G - eq->lambda * r1[2];
+  r2[2] = -eq->g - eq->lambda * r1[2];
   ++nevaluations;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_1: ax=%Lg ay=%Lg az=%Lg\n",
-			              r2[0], r2[1], r2[2]);
-	fprintf (stderr, "equation_acceleration_1: end\n");
+  fprintf (stderr, "equation_acceleration_1: ax=%Lg ay=%Lg az=%Lg\n",
+           r2[0], r2[1], r2[2]);
+  fprintf (stderr, "equation_acceleration_1: end\n");
 #endif
 }
 
@@ -387,7 +200,7 @@ equation_solution_1 (Equation * eq,     ///< Equation struct.
   long double v[2];
   long double li, gl, elt, k;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_1: start\n");
+  fprintf (stderr, "equation_solution_1: start\n");
 #endif
   v[0] = eq->v[0] - eq->w[0];
   v[1] = eq->v[1] - eq->w[1];
@@ -395,18 +208,18 @@ equation_solution_1 (Equation * eq,     ///< Equation struct.
   r1[0] = eq->w[0] + v[0] * elt;
   r1[1] = eq->w[1] + v[1] * elt;
   li = 1.L / eq->lambda;
-  gl = G * li;
+  gl = eq->g * li;
   r1[2] = (eq->v[2] + gl) * elt - gl;
   k = li * (1.L - elt);
   r0[0] = eq->r[0] + eq->w[0] * t + v[0] * k;
   r0[1] = eq->r[1] + eq->w[1] * t + v[1] * k;
   r0[2] = eq->r[2] - gl * t + (eq->v[2] + gl) * k;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_1: vx=%Lg vy=%Lg vz=%Lg\n",
-			              r1[0], r1[1], r1[2]);
-	fprintf (stderr, "equation_solution_1: x=%Lg y=%Lg z=%Lg\n",
-			              r0[0], r0[1], r0[2]);
-	fprintf (stderr, "equation_solution_1: end\n");
+  fprintf (stderr, "equation_solution_1: vx=%Lg vy=%Lg vz=%Lg\n",
+           r1[0], r1[1], r1[2]);
+  fprintf (stderr, "equation_solution_1: x=%Lg y=%Lg z=%Lg\n",
+           r0[0], r0[1], r0[2]);
+  fprintf (stderr, "equation_solution_1: end\n");
 #endif
 }
 
@@ -434,18 +247,18 @@ equation_acceleration_2 (Equation * eq, ///< Equation struct.
 {
   long double v[2];
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_2: start\n");
+  fprintf (stderr, "equation_acceleration_2: start\n");
 #endif
   v[0] = r1[0] - eq->w[0];
   v[1] = r1[1] - eq->w[1];
   r2[0] = -eq->lambda * fabsl (v[0]) * v[0];
   r2[1] = -eq->lambda * fabsl (v[1]) * v[1];
-  r2[2] = -G - eq->lambda * fabsl (r1[2]) * r1[2];
+  r2[2] = -eq->g - eq->lambda * fabsl (r1[2]) * r1[2];
   ++nevaluations;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_2: ax=%Lg ay=%Lg az=%Lg\n",
-			              r2[0], r2[1], r2[2]);
-	fprintf (stderr, "equation_acceleration_2: end\n");
+  fprintf (stderr, "equation_acceleration_2: ax=%Lg ay=%Lg az=%Lg\n",
+           r2[0], r2[1], r2[2]);
+  fprintf (stderr, "equation_acceleration_2: end\n");
 #endif
 }
 
@@ -527,7 +340,7 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
   long double v[2], k[2];
   long double tc, g_l, gl, glt, lt, li, alpha;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_2: start\n");
+  fprintf (stderr, "equation_solution_2: start\n");
 #endif
   v[0] = eq->v[0] - eq->w[0];
   v[1] = eq->v[1] - eq->w[1];
@@ -549,9 +362,9 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
     r0[1] += k[1];
   else
     r0[1] -= k[1];
-  gl = sqrtl (G * eq->lambda);
+  gl = sqrtl (eq->g * eq->lambda);
   glt = gl * t;
-  g_l = sqrtl (G / eq->lambda);
+  g_l = sqrtl (eq->g / eq->lambda);
   r0[2] = eq->r[2];
   if (eq->v[2] <= 0.L)
     {
@@ -561,8 +374,8 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
         / (g_l * k[0] - eq->v[2] * k[1]);
       r0[2] -= li * logl (k[0] - eq->v[2] * k[1] / g_l);
     }
-	else
-	  {
+  else
+    {
       alpha = atanl (eq->v[2] / g_l);
       tc = alpha / gl;
       if (t <= tc)
@@ -570,20 +383,20 @@ equation_solution_2 (Equation * eq,     ///< Equation struct.
           r1[2] = g_l * tanl (alpha - glt);
           r0[2] += li * logl (cosl (alpha - glt) / cosl (alpha));
         }
-			else
-			  {
+      else
+        {
           t -= tc;
           glt = gl * t;
           r1[2] = -g_l * tanhl (glt);
           r0[2] -= li * logl (cosl (alpha) * coshl (glt));
-				}
-		}
+        }
+    }
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_2: vx=%Lg vy=%Lg vz=%Lg\n",
-			              r1[0], r1[1], r1[2]);
-	fprintf (stderr, "equation_solution_2: x=%Lg y=%Lg z=%Lg\n",
-			              r0[0], r0[1], r0[2]);
-	fprintf (stderr, "equation_solution_2: end\n");
+  fprintf (stderr, "equation_solution_2: vx=%Lg vy=%Lg vz=%Lg\n",
+           r1[0], r1[1], r1[2]);
+  fprintf (stderr, "equation_solution_2: x=%Lg y=%Lg z=%Lg\n",
+           r0[0], r0[1], r0[2]);
+  fprintf (stderr, "equation_solution_2: end\n");
 #endif
 }
 
@@ -610,7 +423,7 @@ equation_acceleration_3 (Equation * eq, ///< Equation struct.
 {
   long double elt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_3: start\n");
+  fprintf (stderr, "equation_acceleration_3: start\n");
 #endif
   elt = expl (-eq->lambda * t);
   r2[0] = eq->w[0] * elt;
@@ -618,9 +431,9 @@ equation_acceleration_3 (Equation * eq, ///< Equation struct.
   r2[2] = -G;
   ++nevaluations;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_acceleration_3: ax=%Lg ay=%Lg az=%Lg\n",
-			              r2[0], r2[1], r2[2]);
-	fprintf (stderr, "equation_acceleration_3: end\n");
+  fprintf (stderr, "equation_acceleration_3: ax=%Lg ay=%Lg az=%Lg\n",
+           r2[0], r2[1], r2[2]);
+  fprintf (stderr, "equation_acceleration_3: end\n");
 #endif
 }
 
@@ -653,23 +466,23 @@ equation_solution_3 (Equation * eq,     ///< Equation struct.
 {
   long double li, k;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_3: start\n");
+  fprintf (stderr, "equation_solution_3: start\n");
 #endif
   li = 1.L / eq->lambda;
   k = li * (1.L - expl (-eq->lambda * t));
   r1[0] = eq->v[0] + eq->w[0] * k;
   r1[1] = eq->v[1] + eq->w[1] * k;
-  r1[2] = eq->v[2] - G * t;
+  r1[2] = eq->v[2] - eq->g * t;
   k *= li;
   r0[0] = eq->r[0] + (eq->v[0] + eq->w[0] * li) * t - eq->w[0] * k;
   r0[1] = eq->r[1] + (eq->v[1] + eq->w[1] * li) * t - eq->w[1] * k;
   r0[2] = eq->r[2] + t * (eq->v[2] - t * 0.5L * G);
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solution_3: vx=%Lg vy=%Lg vz=%Lg\n",
-			              r1[0], r1[1], r1[2]);
-	fprintf (stderr, "equation_solution_3: x=%Lg y=%Lg z=%Lg\n",
-			              r0[0], r0[1], r0[2]);
-	fprintf (stderr, "equation_solution_3: end\n");
+  fprintf (stderr, "equation_solution_3: vx=%Lg vy=%Lg vz=%Lg\n",
+           r1[0], r1[1], r1[2]);
+  fprintf (stderr, "equation_solution_3: x=%Lg y=%Lg z=%Lg\n",
+           r0[0], r0[1], r0[2]);
+  fprintf (stderr, "equation_solution_3: end\n");
 #endif
 }
 
@@ -687,7 +500,7 @@ equation_solve (Equation * eq,  ///< Equation struct.
   long double t1, t2, t3;
   unsigned int i;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solve: start\n");
+  fprintf (stderr, "equation_solve: start\n");
 #endif
   t1 = 0.L;
   t2 = 1.L;
@@ -709,12 +522,11 @@ equation_solve (Equation * eq,  ///< Equation struct.
   memcpy (r0, r02, 3 * sizeof (long double));
   memcpy (r1, r12, 3 * sizeof (long double));
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_solve: vx=%Lg vy=%Lg vz=%Lg\n",
-			              r1[0], r1[1], r1[2]);
-	fprintf (stderr, "equation_solve: x=%Lg y=%Lg z=%Lg\n",
-			              r0[0], r0[1], r0[2]);
-	fprintf (stderr, "equation_solve: t=%Lg\n", t3);
-	fprintf (stderr, "equation_solve: end\n");
+  fprintf (stderr, "equation_solve: vx=%Lg vy=%Lg vz=%Lg\n",
+           r1[0], r1[1], r1[2]);
+  fprintf (stderr, "equation_solve: x=%Lg y=%Lg z=%Lg\n", r0[0], r0[1], r0[2]);
+  fprintf (stderr, "equation_solve: t=%Lg\n", t3);
+  fprintf (stderr, "equation_solve: end\n");
 #endif
   return t3;
 }
@@ -729,9 +541,9 @@ equation_step_size_0 (Equation * eq __attribute__ ((unused)))
 ///< Equation struct.
 {
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_step_size_0: start\n");
-	fprintf (stderr, "equation_step_size_0: dt=%Lg\n", dt);
-	fprintf (stderr, "equation_step_size_0: end\n");
+  fprintf (stderr, "equation_step_size_0: start\n");
+  fprintf (stderr, "equation_step_size_0: dt=%Lg\n", dt);
+  fprintf (stderr, "equation_step_size_0: end\n");
 #endif
   return dt;
 }
@@ -745,14 +557,14 @@ equation_step_size_0 (Equation * eq __attribute__ ((unused)))
 static long double
 equation_step_size_1 (Equation * eq)    ///< Equation struct.
 {
-	long double dt;
+  long double dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_step_size_1: start\n");
+  fprintf (stderr, "equation_step_size_1: start\n");
 #endif
   dt = kt / fabsl (eq->lambda);
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_step_size_1: dt=%Lg\n", dt);
-	fprintf (stderr, "equation_step_size_1: end\n");
+  fprintf (stderr, "equation_step_size_1: dt=%Lg\n", dt);
+  fprintf (stderr, "equation_step_size_1: end\n");
 #endif
   return dt;
 }
@@ -766,16 +578,16 @@ equation_step_size_1 (Equation * eq)    ///< Equation struct.
 static long double
 equation_step_size_2 (Equation * eq)    ///< Equation struct.
 {
-	long double dt;
+  long double dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_step_size_2: start\n");
+  fprintf (stderr, "equation_step_size_2: start\n");
 #endif
   dt = kt / (fabsl (eq->lambda) *
              fmaxl (fabsl (r1[0] - eq->w[0]),
                     fmaxl (fabsl (r1[1] - eq->w[1]), fabsl (r1[2]))));
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_step_size_2: dt=%Lg\n", dt);
-	fprintf (stderr, "equation_step_size_2: end\n");
+  fprintf (stderr, "equation_step_size_2: dt=%Lg\n", dt);
+  fprintf (stderr, "equation_step_size_2: end\n");
 #endif
   return dt;
 }
@@ -792,17 +604,17 @@ equation_land_0 (Equation * eq, ///< Equation struct.
 {
   long double t2, tf;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_0: start\n");
+  fprintf (stderr, "equation_land_0: start\n");
 #endif
   tf = eq->tf;
   if (*t >= tf)
-	  {
+    {
 #if DEBUG_EQUATION
-    	fprintf (stderr, "equation_land_0: landing\n");
-	    fprintf (stderr, "equation_land_0: end\n");
+      fprintf (stderr, "equation_land_0: landing\n");
+      fprintf (stderr, "equation_land_0: end\n");
 #endif
       return 1;
-		}
+    }
   t2 = *t + *dt;
   if (t2 >= tf)
     {
@@ -812,9 +624,9 @@ equation_land_0 (Equation * eq, ///< Equation struct.
   else
     *t = t2;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_0: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_0: no landing\n");
-	fprintf (stderr, "equation_land_0: end\n");
+  fprintf (stderr, "equation_land_0: t=%Lg dt=%Lg\n", *t, *dt);
+  fprintf (stderr, "equation_land_0: no landing\n");
+  fprintf (stderr, "equation_land_0: end\n");
 #endif
   return 0;
 }
@@ -832,15 +644,15 @@ equation_land_1 (Equation * eq __attribute__ ((unused)),
 {
   long double h;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_1: start\n");
+  fprintf (stderr, "equation_land_1: start\n");
 #endif
   if (r0[2] > 0.)
     {
       *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_1: no landing\n");
-	fprintf (stderr, "equation_land_1: end\n");
+      fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
+      fprintf (stderr, "equation_land_1: no landing\n");
+      fprintf (stderr, "equation_land_1: end\n");
 #endif
       return 0;
     }
@@ -854,9 +666,9 @@ equation_land_1 (Equation * eq __attribute__ ((unused)),
   r1[2] -= h * r2[2];
   *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_1: landing\n");
-	fprintf (stderr, "equation_land_1: end\n");
+  fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
+  fprintf (stderr, "equation_land_1: landing\n");
+  fprintf (stderr, "equation_land_1: end\n");
 #endif
   return 1;
 }
@@ -874,15 +686,15 @@ equation_land_2 (Equation * eq __attribute__ ((unused)),
 {
   long double h;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_2: start\n");
+  fprintf (stderr, "equation_land_2: start\n");
 #endif
   if (r0[2] > 0.)
     {
       *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_2: no landing\n");
-	fprintf (stderr, "equation_land_2: end\n");
+      fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
+      fprintf (stderr, "equation_land_2: no landing\n");
+      fprintf (stderr, "equation_land_2: end\n");
 #endif
       return 0;
     }
@@ -896,9 +708,9 @@ equation_land_2 (Equation * eq __attribute__ ((unused)),
   r1[2] -= h * r2[2];
   *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_2: landing\n");
-	fprintf (stderr, "equation_land_2: end\n");
+  fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
+  fprintf (stderr, "equation_land_2: landing\n");
+  fprintf (stderr, "equation_land_2: end\n");
 #endif
   return 1;
 }
@@ -916,15 +728,15 @@ equation_land_3 (Equation * eq __attribute__ ((unused)),
 {
   long double h, r3[3];
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_3: start\n");
+  fprintf (stderr, "equation_land_3: start\n");
 #endif
   if (r0[2] > 0.)
     {
       *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_3: no landing\n");
-	fprintf (stderr, "equation_land_3: end\n");
+      fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
+      fprintf (stderr, "equation_land_3: no landing\n");
+      fprintf (stderr, "equation_land_3: end\n");
 #endif
       return 0;
     }
@@ -941,9 +753,9 @@ equation_land_3 (Equation * eq __attribute__ ((unused)),
   r1[2] -= h * (r2[2] - h * 0.5L * r3[2]);
   *t += *dt;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
-	fprintf (stderr, "equation_land_3: landing\n");
-	fprintf (stderr, "equation_land_3: end\n");
+  fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
+  fprintf (stderr, "equation_land_3: landing\n");
+  fprintf (stderr, "equation_land_3: end\n");
 #endif
   return 1;
 }
@@ -957,7 +769,7 @@ equation_init (Equation * eq,   ///< Equation struct.
 {
   long double v, ha, va;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_init: start\n");
+  fprintf (stderr, "equation_init: start\n");
 #endif
   switch (eq->type)
     {
@@ -981,7 +793,7 @@ equation_init (Equation * eq,   ///< Equation struct.
   eq->w[0] = v * cosl (ha);
   eq->w[1] = v * sinl (ha);
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_init: end\n");
+  fprintf (stderr, "equation_init: end\n");
 #endif
 }
 
@@ -995,7 +807,7 @@ equation_read (Equation * eq,   ///< Equation struct.
                FILE * file)     ///< file.
 {
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_read: start\n");
+  fprintf (stderr, "equation_read: start\n");
 #endif
   if (fscanf (file, "%*s%*s%u", &eq->type) != 1)
     goto exit_on_error;
@@ -1087,15 +899,157 @@ equation_read (Equation * eq,   ///< Equation struct.
     default:
       goto exit_on_error;
     }
+  eq->g = G;
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_read: success\n");
-	fprintf (stderr, "equation_read: end\n");
+  fprintf (stderr, "equation_read: success\n");
+  fprintf (stderr, "equation_read: end\n");
 #endif
   return 1;
 exit_on_error:
 #if DEBUG_EQUATION
-	fprintf (stderr, "equation_read: error\n");
-	fprintf (stderr, "equation_read: end\n");
+  fprintf (stderr, "equation_read: error\n");
+  fprintf (stderr, "equation_read: end\n");
+#endif
+  return 0;
+}
+
+/**
+ * Function to read the equation data on a XML node.
+ *
+ * \return 1 on success, 0 on error.
+ */
+int
+equation_read_xml (Equation * eq,       ///< Equation struct.
+                   xmlNode * node)      ///< XML node.
+{
+  int error_code;
+#if DEBUG_EQUATION
+  fprintf (stderr, "equation_read_xml: start\n");
+#endif
+  if (xmlStrcmp (node->name, XML_EQUATION))
+    goto exit_on_error;
+  eq->type = xml_node_get_uint (node, XML_TYPE, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  switch (eq->type)
+    {
+    case 0:
+      equation_acceleration = equation_acceleration_0;
+      equation_solution = equation_solution_0;
+      break;
+    case 1:
+      eq->lambda
+        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
+      if (error_code)
+        goto exit_on_error;
+      equation_acceleration = equation_acceleration_1;
+      equation_solution = equation_solution_1;
+      break;
+    case 2:
+      eq->lambda
+        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
+      if (error_code)
+        goto exit_on_error;
+      equation_acceleration = equation_acceleration_2;
+      equation_solution = equation_solution_2;
+      break;
+    case 3:
+      eq->lambda
+        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
+      if (error_code)
+        goto exit_on_error;
+      equation_acceleration = equation_acceleration_3;
+      equation_solution = equation_solution_3;
+      break;
+    default:
+      goto exit_on_error;
+    }
+  eq->r[0] = xml_node_get_float_with_default (node, XML_X, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->r[1] = xml_node_get_float_with_default (node, XML_Y, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->r[2] = xml_node_get_float (node, XML_Z, &error_code);
+  if (error_code || eq->r[2] < 0.L)
+    goto exit_on_error;
+  eq->v[0] = xml_node_get_float_with_default (node, XML_VX, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->v[1] = xml_node_get_float_with_default (node, XML_VY, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->v[2] = xml_node_get_float_with_default (node, XML_VZ, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->g = xml_node_get_float_with_default (node, XML_G, G, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->w[0] = xml_node_get_float_with_default (node, XML_WX, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->w[1] = xml_node_get_float_with_default (node, XML_WY, 0.L, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  eq->size_type = xml_node_get_uint (node, XML_TIME_STEP, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  switch (eq->size_type)
+    {
+    case 0:
+      equation_step_size = equation_step_size_0;
+      dt = xml_node_get_float (node, XML_DT, &error_code);
+      if (error_code)
+        goto exit_on_error;
+      break;
+    case 1:
+      switch (eq->type)
+        {
+        case 1:
+          equation_step_size = equation_step_size_1;
+          break;
+        case 2:
+          equation_step_size = equation_step_size_2;
+        }
+      kt = xml_node_get_float (node, XML_KT, &error_code);
+      if (error_code)
+        goto exit_on_error;
+      break;
+    default:
+      goto exit_on_error;
+    }
+  eq->land_type = xml_node_get_uint (node, XML_LAND, &error_code);
+  if (error_code)
+    goto exit_on_error;
+  switch (eq->land_type)
+    {
+    case 0:
+      equation_land = equation_land_0;
+      eq->tf = xml_node_get_float (node, XML_T, &error_code);
+      if (error_code || eq->tf < 0.)
+        goto exit_on_error;
+      break;
+    case 1:
+      equation_land = equation_land_1;
+      break;
+    case 2:
+      equation_land = equation_land_2;
+      break;
+    case 3:
+      equation_land = equation_land_3;
+      break;
+    default:
+      goto exit_on_error;
+    }
+#if DEBUG_EQUATION
+  fprintf (stderr, "equation_read_xml: success\n");
+  fprintf (stderr, "equation_read_xml: end\n");
+#endif
+  return 1;
+exit_on_error:
+#if DEBUG_EQUATION
+  fprintf (stderr, "equation_read_xml: error\n");
+  fprintf (stderr, "equation_read_xml: end\n");
 #endif
   return 0;
 }

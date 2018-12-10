@@ -48,6 +48,7 @@ typedef struct
   const long double *c;         ///< array of c-coefficients.
   const long double *ea;        ///< array of a-error coefficients.
   const long double *eb;        ///< array of b-error coefficients.
+  unsigned int steps;           ///< steps number.
 } MultiSteps;
 
 #define MULTI_STEPS_METHOD(ms) ((Method *)ms->method)
@@ -60,5 +61,6 @@ void multi_steps_init_variables (MultiSteps * ms);
 long double multi_steps_run (MultiSteps * ms, Equation * eq);
 void multi_steps_delete (MultiSteps * ms);
 int multi_steps_read (MultiSteps * ms, FILE * file);
+int multi_steps_read_xml (MultiSteps * ms, xmlNode * node);
 
 #endif

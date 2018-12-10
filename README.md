@@ -1,4 +1,4 @@
-BALLISTIC (0.1.4 version)
+BALLISTIC (0.3.0 version)
 =========================
 
 A software to benchmark ballistic models.
@@ -77,13 +77,13 @@ FILES
 * README.md: Readme file.
 * LICENSE: BSD type license.
 * TODO: List of tasks TO DO.
-* 0.1.4/\*.h: Header files.
-* 0.1.4/\*.c: Source files.
-* 0.1.4/Doxyfile: configuration file to generate doxygen documentation.
-* 0.1.4/Makefile: to build the executable program.
-* 0.1.4/case\*: different example cases input files.
-* 0.1.4/script.sh: a shell script to generate some convergence plots.
-* 0.1.4/plot: a GNUPlot input file to do the plots.
+* 0.3.0/\*.h: Header files.
+* 0.3.0/\*.c: Source files.
+* 0.3.0/Doxyfile: configuration file to generate doxygen documentation.
+* 0.3.0/Makefile: to build the executable program.
+* 0.3.0/case\*: different example cases input files.
+* 0.3.0/script.sh: a shell script to generate some convergence plots.
+* 0.3.0/plot: a GNUPlot input file to do the plots.
 
 BUILDING THE EXECUTABLE FILE
 ----------------------------
@@ -111,7 +111,7 @@ ______________________
 > $ git clone https://github.com/jburguete/ballistic
 
 2. Access to the program directory:
-> $ cd ballistic/0.1.4
+> $ cd ballistic/0.3.0
 
 3. Build:
 > $ make
@@ -123,7 +123,7 @@ MAKING REFERENCE MANUAL INSTRUCTIONS (latex/refman.pdf file)
 ------------------------------------------------------------
 
 Execute on a terminal:
-> $ cd ballistic/0.1.4
+> $ cd ballistic/0.3.0
 >
 > $ doxygen
 >

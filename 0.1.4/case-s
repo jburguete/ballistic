@@ -1,0 +1,17 @@
+equation = 1
+z0 = 1.95
+min-velocity = 1.1760538687176612882e+01
+max-velocity = 1.1760538687176612882e+01
+vertical-angle = 0.
+max-wind = 0
+size = 0
+land = 2
+min-lambda = 1
+max-lambda = 1.
+dt = 0.2
+ntrajectories = 1
+convergence = 1
+convergence-factor = 0.5
+steps = 1
+rk = 1
+error-dt = 0

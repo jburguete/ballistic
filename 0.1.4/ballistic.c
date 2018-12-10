@@ -45,7 +45,7 @@ OF SUCH DAMAGE.
 #include "runge-kutta.h"
 #include "multi-steps.h"
 
-#define DEBUG 0                 ///< macro to debug the code.
+#define DEBUG_BALLISTIC 1           ///< macro to debug the ballistic functions.
 
 long double convergence_factor;
 ///< convergence factor.
@@ -63,6 +63,9 @@ int
 read_data (FILE * file,         ///< file.
            Equation * eq)       ///< Equation struct.
 {
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "read_data: start\n");
+#endif
   if (!equation_read (eq, file))
     goto fail;
   if (fscanf (file, "%*s%*s%u", &ntrajectories) != 1)
@@ -73,10 +76,18 @@ read_data (FILE * file,         ///< file.
     goto fail;
   if (fscanf (file, "%*s%*s%u", &steps) != 1)
     goto fail;
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "read_data: success\n");
+  fprintf (stderr, "read_data: end\n");
+#endif
   return 1;
 
 fail:
   printf ("Error reading data\n");
+#if DEBUG_BALLISTIC
+  fprintf (stderr, "read_data: error\n");
+  fprintf (stderr, "read_data: end\n");
+#endif
   return 0;
 }
 
@@ -126,7 +137,7 @@ main (int argn,                 ///< number of arguments.
   long double sr0[3], sr1[3];
   long double t, l0r0, l2r0, l0r1, l2r1, e;
   unsigned int i, j;
-#if DEBUG
+#if DEBUG_BALLISTIC
   fprintf (stderr, "main: start\n");
 #endif
   if (argn != 3)
@@ -134,7 +145,7 @@ main (int argn,                 ///< number of arguments.
       printf ("The syntax is:\n./runge-kutta input_file output_file\n");
       return 1;
     }
-#if DEBUG
+#if DEBUG_BALLISTIC
   fprintf (stderr, "main: reading data\n");
 #endif
   file = fopen (argc[1], "r");
@@ -145,7 +156,7 @@ main (int argn,                 ///< number of arguments.
     }
   if (!read_data (file, eq))
     return 3;
-#if DEBUG
+#if DEBUG_BALLISTIC
   fprintf (stderr, "main: initing method\n");
 #endif
   if (steps == 1)
@@ -178,23 +189,23 @@ main (int argn,                 ///< number of arguments.
       l0r0 = l2r0 = l0r1 = l2r1 = 0.L;
       for (i = 0; i < ntrajectories; ++i)
         {
-#if DEBUG
+#if DEBUG_BALLISTIC
           fprintf (stderr, "main: initing equation data\n");
 #endif
           equation_init (eq, rng);
-#if DEBUG
+#if DEBUG_BALLISTIC
           fprintf (stderr, "main: initing variables\n");
 #endif
           equation_solution (eq, r0, r1, 0.);
           equation_acceleration (eq, r0, r1, r2, 0.L);
-#if DEBUG
+#if DEBUG_BALLISTIC
           fprintf (stderr, "main: running\n");
 #endif
           if (steps == 1)
             t = runge_kutta_run (rk, eq);
           else
             t = multi_steps_run (ms, eq);
-#if DEBUG
+#if DEBUG_BALLISTIC
           fprintf (stderr, "main: solutions\n");
           print_solution ("Numerical solution", r0, r1);
           printf ("Time = %.19Le\n", t);
@@ -207,7 +218,7 @@ main (int argn,                 ///< number of arguments.
             default:
               t = equation_solve (eq, sr0, sr1);
             }
-#if DEBUG
+#if DEBUG_BALLISTIC
           print_solution ("Analytical solution", sr0, sr1);
           printf ("Time = %.19Le\n", t);
           print_error ("Position error", r0, sr0);
@@ -221,7 +232,7 @@ main (int argn,                 ///< number of arguments.
           l2r1 += e * e;
 
         }
-#if DEBUG
+#if DEBUG_BALLISTIC
       fprintf (stderr, "main: saving results\n");
 #endif
       l2r0 = sqrtl (l2r0 / ntrajectories);
@@ -243,7 +254,7 @@ main (int argn,                 ///< number of arguments.
     }
   fclose (file);
   printf ("Time = %.19Le\n", t);
-#if DEBUG
+#if DEBUG_BALLISTIC
   fprintf (stderr, "main: deleting method\n");
 #endif
   if (steps == 1)
@@ -251,7 +262,7 @@ main (int argn,                 ///< number of arguments.
   else
     multi_steps_delete (ms);
   gsl_rng_free (rng);
-#if DEBUG
+#if DEBUG_BALLISTIC
   fprintf (stderr, "main: end\n");
 #endif
   return 0;

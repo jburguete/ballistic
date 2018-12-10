@@ -43,7 +43,7 @@ OF SUCH DAMAGE.
 #include "method.h"
 #include "runge-kutta.h"
 
-#define DEBUG_RUNGE_KUTTA 0     ///< macro to debug the Runge-Kutta functions.
+#define DEBUG_RUNGE_KUTTA 1     ///< macro to debug the Runge-Kutta functions.
 
 ///> 1st array of 1st order Runge-Kutta b coefficients.
 static const long double rk_b1_1[1] = { 1.L };
@@ -119,10 +119,16 @@ static const long double rk_t4[4] = { 0.5L, 0.5L, 1.L, 1.L };
 void
 runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 {
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_1: start\n");
+#endif
   method_init (RUNGE_KUTTA_METHOD (rk), 1, 1);
   rk->b = rk_b1;
   rk->t = rk_t1;
   rk->e = rk_e1;
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_1: end\n");
+#endif
 }
 
 /**
@@ -131,10 +137,16 @@ runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 void
 runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 {
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_2: start\n");
+#endif
   method_init (RUNGE_KUTTA_METHOD (rk), 2, 2);
   rk->b = rk_b2;
   rk->t = rk_t2;
   rk->e = rk_e2;
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_2: end\n");
+#endif
 }
 
 /**
@@ -143,10 +155,16 @@ runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 void
 runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 {
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_3: start\n");
+#endif
   method_init (RUNGE_KUTTA_METHOD (rk), 3, 3);
   rk->b = rk_b3;
   rk->t = rk_t3;
   rk->e = rk_e3;
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_3: end\n");
+#endif
 }
 
 /**
@@ -155,9 +173,15 @@ runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 void
 runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 {
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_4: start\n");
+#endif
   method_init (RUNGE_KUTTA_METHOD (rk), 4, 4);
   rk->b = rk_b4;
   rk->t = rk_t4;
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_4: end\n");
+#endif
 }
 
 /**
@@ -166,7 +190,13 @@ runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 void
 runge_kutta_init_variables (RungeKutta * rk)
 {
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_variables: start\n");
+#endif
   method_init_variables (RUNGE_KUTTA_METHOD (rk));
+#if DEBUG_RUNGE_KUTTA
+	fprintf (stderr, "runge_kutta_init_variables: end\n");
+#endif
 }
 
 /**
@@ -345,7 +375,13 @@ runge_kutta_run (RungeKutta * rk,       ///< RungeKutta struct.
 void
 runge_kutta_delete (RungeKutta * rk)    ///< RungeKutta struct.
 {
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_delete: start\n");
+#endif
   method_delete (RUNGE_KUTTA_METHOD (rk));
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_delete: end\n");
+#endif
 }
 
 /**
@@ -358,6 +394,9 @@ runge_kutta_read (RungeKutta * rk,      ///< RungeKutta struct.
                   FILE * file)  ///< file.
 {
   unsigned int type;
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read: start\n");
+#endif
   if (fscanf (file, "%*s%*s%u", &type) != 1)
     goto fail;
   if (!method_read (RUNGE_KUTTA_METHOD (rk), file))
@@ -379,9 +418,17 @@ runge_kutta_read (RungeKutta * rk,      ///< RungeKutta struct.
     default:
       goto fail;
     }
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read: success\n");
+  fprintf (stderr, "runge_kutta_read: end\n");
+#endif
   return 1;
 
 fail:
   printf ("Error reading Runge-Kutta data\n");
+#if DEBUG_RUNGE_KUTTA
+  fprintf (stderr, "runge_kutta_read: error\n");
+  fprintf (stderr, "runge_kutta_read: end\n");
+#endif
   return 0;
 }

@@ -39,10 +39,11 @@ OF SUCH DAMAGE.
 #include <string.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+#include <glib.h>
 #include "equation.h"
 #include "method.h"
 
-#define DEBUG_METHOD 0
+#define DEBUG_METHOD 1
 ///< macro to debug the numerical method functions.
 
 /**
@@ -53,8 +54,14 @@ method_init (Method * m,        ///< Method struct.
              unsigned int nsteps,       ///< number of steps.
              unsigned int order)        ///< order of accuracy.
 {
+#if DEBUG_METHOD
+	fprintf (stderr, "method_init: start\n");
+#endif
   m->nsteps = nsteps;
   m->order = order;
+#if DEBUG_METHOD
+	fprintf (stderr, "method_init: end\n");
+#endif
 }
 
 /**
@@ -64,17 +71,23 @@ void
 method_init_variables (Method * m)      ///< Method struct.
 {
   unsigned int i, n;
+#if DEBUG_METHOD
+	fprintf (stderr, "method_init_variables: start\n");
+#endif
   n = m->nsteps + 1;
-  m->r0 = (long double **) malloc (n * sizeof (long double *));
-  m->r1 = (long double **) malloc (n * sizeof (long double *));
-  m->r2 = (long double **) malloc (n * sizeof (long double *));
+  m->r0 = (long double **) g_slice_alloc (n * sizeof (long double *));
+  m->r1 = (long double **) g_slice_alloc (n * sizeof (long double *));
+  m->r2 = (long double **) g_slice_alloc (n * sizeof (long double *));
   for (i = 0; i < n; ++i)
     {
-      m->r0[i] = (long double *) malloc (3 * sizeof (long double));
-      m->r1[i] = (long double *) malloc (3 * sizeof (long double));
-      m->r2[i] = (long double *) malloc (3 * sizeof (long double));
+      m->r0[i] = (long double *) g_slice_alloc (3 * sizeof (long double));
+      m->r1[i] = (long double *) g_slice_alloc (3 * sizeof (long double));
+      m->r2[i] = (long double *) g_slice_alloc (3 * sizeof (long double));
     }
   m->et0 = m->et1 = 0.L;
+#if DEBUG_METHOD
+	fprintf (stderr, "method_init_variables: end\n");
+#endif
 }
 
 /**
@@ -88,8 +101,15 @@ method_dt (Method * m,          ///< Method struct.
            long double dt)      ///< actual time step size.
 {
   long double dt2;
+#if DEBUG_METHOD
+	fprintf (stderr, "method_dt: start\n");
+#endif
   dt2 = dt * fminl (m->alpha,
                     powl (m->emt * dt / m->e0, 1.L / (m->order - 1.L)));
+#if DEBUG_METHOD
+	fprintf (stderr, "method_dt: dt=%Lg\n", dt2);
+	fprintf (stderr, "method_dt: end\n");
+#endif
   return dt2;
 }
 
@@ -99,19 +119,22 @@ method_dt (Method * m,          ///< Method struct.
 void
 method_delete (Method * m)      ///< Method struct.
 {
-  unsigned int i;
-  i = m->nsteps + 1;
+  unsigned int i, n;
+#if DEBUG_METHOD
+  fprintf (stderr, "method_delete: start\n");
+#endif
+  n = i = m->nsteps + 1;
   do
     {
       --i;
-      free (m->r2[i]);
-      free (m->r1[i]);
-      free (m->r0[i]);
+      g_slice_free1 (3 * sizeof (long double), m->r2[i]);
+      g_slice_free1 (3 * sizeof (long double), m->r1[i]);
+      g_slice_free1 (3 * sizeof (long double), m->r0[i]);
     }
   while (i);
-  free (m->r2);
-  free (m->r1);
-  free (m->r0);
+  g_slice_free1 (n * sizeof (long double *), m->r2);
+  g_slice_free1 (n * sizeof (long double *), m->r1);
+  g_slice_free1 (n * sizeof (long double *), m->r0);
 #if DEBUG_METHOD
   fprintf (stderr, "method_delete: end\n");
 #endif
@@ -126,6 +149,9 @@ int
 method_read (Method * m,        ///< Method struct.
              FILE * file)       ///< file.
 {
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read: start\n");
+#endif
   if (fscanf (file, "%*s%*s%u", &m->error_dt) != 1)
     goto fail;
   switch (m->error_dt)
@@ -144,9 +170,17 @@ method_read (Method * m,        ///< Method struct.
     default:
       goto fail;
     }
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read: success\n");
+  fprintf (stderr, "method_read: end\n");
+#endif
   return 1;
 
 fail:
   printf ("Error reading method data\n");
+#if DEBUG_METHOD
+  fprintf (stderr, "method_read: error\n");
+  fprintf (stderr, "method_read: end\n");
+#endif
   return 0;
 }

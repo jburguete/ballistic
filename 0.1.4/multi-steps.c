@@ -81,6 +81,9 @@ multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
                   unsigned int nsteps)  ///< number of steps.
 {
   Method *m;
+#if DEBUG_MULTI_STEPS
+	fprintf (stderr, "multi_steps_init: start\n");
+#endif
   m = MULTI_STEPS_METHOD (ms);
   switch (nsteps)
     {
@@ -100,8 +103,16 @@ multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
       break;
     default:
       printf ("Error reading multi-steps data\n");
+#if DEBUG_MULTI_STEPS
+      fprintf (stderr, "multi_steps_init: error\n");
+	    fprintf (stderr, "multi_steps_init: end\n");
+#endif
       return 0;
     }
+#if DEBUG_MULTI_STEPS
+	fprintf (stderr, "multi_steps_init: success\n");
+	fprintf (stderr, "multi_steps_init: end\n");
+#endif
   return 1;
 }
 
@@ -111,8 +122,14 @@ multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
 void
 multi_steps_init_variables (MultiSteps * ms)
 {
+#if DEBUG_MULTI_STEPS
+	fprintf (stderr, "multi_steps_init_variables: start\n");
+#endif
   runge_kutta_init_variables (MULTI_STEPS_RUNGE_KUTTA (ms));
   method_init_variables (MULTI_STEPS_METHOD (ms));
+#if DEBUG_MULTI_STEPS
+	fprintf (stderr, "multi_steps_init_variables: end\n");
+#endif
 }
 
 /**
@@ -393,8 +410,14 @@ end:
 void
 multi_steps_delete (MultiSteps * ms)    ///< RungeKutta struct.
 {
+#if DEBUG_MULTI_STEPS
+  fprintf (stderr, "multi_steps_delete: start\n");
+#endif
   runge_kutta_delete (MULTI_STEPS_RUNGE_KUTTA (ms));
   method_delete (MULTI_STEPS_METHOD (ms));
+#if DEBUG_MULTI_STEPS
+  fprintf (stderr, "multi_steps_delete: end\n");
+#endif
 }
 
 /**
@@ -406,7 +429,20 @@ int
 multi_steps_read (MultiSteps * ms,      ///< MultiSteps struct.
                   FILE * file)  ///< input file.
 {
+	int e;
+#if DEBUG_MULTI_STEPS
+  fprintf (stderr, "multi_steps_read: start\n");
+#endif
   if (!method_read (MULTI_STEPS_METHOD (ms), file))
-    return 0;
-  return runge_kutta_read (MULTI_STEPS_RUNGE_KUTTA (ms), file);
+    e = 0;
+	else
+    e = runge_kutta_read (MULTI_STEPS_RUNGE_KUTTA (ms), file);
+#if DEBUG_MULTI_STEPS
+	if (e)
+    fprintf (stderr, "multi_steps_read: success\n");
+	else
+    fprintf (stderr, "multi_steps_read: error\n");
+  fprintf (stderr, "multi_steps_read: end\n");
+#endif
+	return e;
 }

@@ -2,8 +2,8 @@
 
 PGOOBJS = equation.pgo method.pgo runge-kutta.pgo multi-steps.pgo ballistic.pgo
 OBJS = equation.o method.o runge-kutta.o multi-steps.o ballistic.o
-LIBS = -lm `pkg-config --libs gsl`
-CFLAGS = `pkg-config --cflags gsl` -c -O3 -march=native -Wall -Wextra \
+LIBS = -lm `pkg-config --libs gsl glib-2.0`
+CFLAGS = `pkg-config --cflags gsl glib-2.0` -c -O3 -march=native -Wall -Wextra \
 	-Wpedantic -D_FORTIFY_SOURCE=2
 PGOGEN = -fprofile-generate
 PGOUSE = -fprofile-use -fprofile-correction
@@ -16,7 +16,8 @@ ballisticpgo: $(PGOOBJS)
 	$(CC) $(PGOGEN) $(PGOOBJS) $(LIBS) -o ballisticpgo
 	cp script.sh scriptpgo.sh
 	sed -i 's/ballistic/ballisticpgo/g' scriptpgo.sh
-	sh scriptpgo.sh
+	./ballisticpgo case-s out
+	#sh scriptpgo.sh
 
 equation.pgo: equation.c equation.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) equation.c -o equation.pgo

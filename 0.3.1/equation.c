@@ -39,6 +39,7 @@ OF SUCH DAMAGE.
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <libxml/parser.h>
+#include <glib.h>
 #include "config.h"
 #include "utils.h"
 #include "equation.h"
@@ -59,7 +60,8 @@ void (*equation_solution) (Equation * eq, long double *r0, long double *r1,
 ///< pointer to the function to calculate the analytical solution.
 long double (*equation_step_size) (Equation * eq);
 ///< pointer to the function to calculate the time step size.
-int (*equation_land) (Equation * eq, long double *t, long double *dt);
+int (*equation_land) (Equation * eq, long double, long double *t, 
+		                  long double *dt);
 ///< pointer to the function to finalize the trajectory.
 long double kt;
 ///< stability time step size coefficient.
@@ -599,15 +601,17 @@ equation_step_size_2 (Equation * eq)    ///< Equation struct.
  */
 static int
 equation_land_0 (Equation * eq, ///< Equation struct.
-                 long double *t,        ///< time.
+                 long double to,        ///< old time.
+                 long double *t,        ///< next time.
                  long double *dt)       ///< time step size.
 {
-  long double t2, tf;
+  long double tf;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_0: start\n");
+	fprintf (stderr, "equation_land_0: to=%Lg\n", to);
 #endif
   tf = eq->tf;
-  if (*t >= tf)
+  if (to >= tf)
     {
 #if DEBUG_EQUATION
       fprintf (stderr, "equation_land_0: landing\n");
@@ -615,14 +619,12 @@ equation_land_0 (Equation * eq, ///< Equation struct.
 #endif
       return 1;
     }
-  t2 = *t + *dt;
-  if (t2 >= tf)
+  *t = to + *dt;
+  if (*t >= tf)
     {
-      *dt = tf - *t;
+      *dt = tf - to;
       *t = tf;
     }
-  else
-    *t = t2;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_0: t=%Lg dt=%Lg\n", *t, *dt);
   fprintf (stderr, "equation_land_0: no landing\n");
@@ -639,16 +641,18 @@ equation_land_0 (Equation * eq, ///< Equation struct.
 static int
 equation_land_1 (Equation * eq __attribute__ ((unused)),
                  ///< Equation struct.
-                 long double *t,        ///< time.
+                 long double to,        ///< old time.
+                 long double *t,        ///< next time.
                  long double *dt)       ///< time step size.
 {
   long double h;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_1: start\n");
+	fprintf (stderr, "equation_land_1: to=%Lg\n", to);
 #endif
   if (r0[2] > 0.)
     {
-      *t += *dt;
+      *t = to + *dt;
 #if DEBUG_EQUATION
       fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
       fprintf (stderr, "equation_land_1: no landing\n");
@@ -657,14 +661,13 @@ equation_land_1 (Equation * eq __attribute__ ((unused)),
       return 0;
     }
   h = r0[2] / r1[2];
-  *dt -= h;
   r0[0] -= h * r1[0];
   r0[1] -= h * r1[1];
   r0[2] -= h * r1[2];
   r1[0] -= h * r2[0];
   r1[1] -= h * r2[1];
   r1[2] -= h * r2[2];
-  *t += *dt;
+  *t = to - h;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_1: t=%Lg dt=%Lg\n", *t, *dt);
   fprintf (stderr, "equation_land_1: landing\n");
@@ -681,16 +684,18 @@ equation_land_1 (Equation * eq __attribute__ ((unused)),
 static int
 equation_land_2 (Equation * eq __attribute__ ((unused)),
                  ///< Equation struct.
-                 long double *t,        ///< time.
+                 long double to,        ///< old time.
+                 long double *t,        ///< next time.
                  long double *dt)       ///< time step size.
 {
   long double h;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_2: start\n");
+	fprintf (stderr, "equation_land_2: to=%Lg\n", to);
 #endif
   if (r0[2] > 0.)
     {
-      *t += *dt;
+      *t = to + *dt;
 #if DEBUG_EQUATION
       fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
       fprintf (stderr, "equation_land_2: no landing\n");
@@ -699,14 +704,13 @@ equation_land_2 (Equation * eq __attribute__ ((unused)),
       return 0;
     }
   h = solve_quadratic (0.5L * r2[2], -r1[2], r0[2], 0.L, *dt);
-  *dt -= h;
   r0[0] -= h * (r1[0] - h * 0.5L * r2[0]);
   r0[1] -= h * (r1[1] - h * 0.5L * r2[1]);
   r0[2] -= h * (r1[2] - h * 0.5L * r2[2]);
   r1[0] -= h * r2[0];
   r1[1] -= h * r2[1];
   r1[2] -= h * r2[2];
-  *t += *dt;
+  *t = to - h;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_2: t=%Lg dt=%Lg\n", *t, *dt);
   fprintf (stderr, "equation_land_2: landing\n");
@@ -723,16 +727,18 @@ equation_land_2 (Equation * eq __attribute__ ((unused)),
 static int
 equation_land_3 (Equation * eq __attribute__ ((unused)),
                  ///< Equation struct.
-                 long double *t,        ///< time.
+                 long double to,        ///< old time.
+                 long double *t,        ///< next time.
                  long double *dt)       ///< time step size.
 {
   long double h, r3[3];
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_3: start\n");
+	fprintf (stderr, "equation_land_3: to=%Lg\n", to);
 #endif
   if (r0[2] > 0.)
     {
-      *t += *dt;
+      *t = to + *dt;
 #if DEBUG_EQUATION
       fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
       fprintf (stderr, "equation_land_3: no landing\n");
@@ -744,14 +750,13 @@ equation_land_3 (Equation * eq __attribute__ ((unused)),
   r3[1] = (r2[1] - ro2[1]) / *dt;
   r3[2] = (r2[2] - ro2[2]) / *dt;
   h = solve_cubic (-1.L / 6.L * r3[2], 0.5L * r2[2], -r1[2], r0[2], 0.L, *dt);
-  *dt -= h;
   r0[0] -= h * (r1[0] - h * (0.5L * r2[0] - h * 1.L / 6.L * r3[0]));
   r0[1] -= h * (r1[1] - h * (0.5L * r2[1] - h * 1.L / 6.L * r3[1]));
   r0[2] -= h * (r1[2] - h * (0.5L * r2[2] - h * 1.L / 6.L * r3[2]));
   r1[0] -= h * (r2[0] - h * 0.5L * r3[0]);
   r1[1] -= h * (r2[1] - h * 0.5L * r3[1]);
   r1[2] -= h * (r2[2] - h * 0.5L * r3[2]);
-  *t += *dt;
+  *t = to - h;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_land_3: t=%Lg dt=%Lg\n", *t, *dt);
   fprintf (stderr, "equation_land_3: landing\n");
@@ -922,15 +927,44 @@ int
 equation_read_xml (Equation * eq,       ///< Equation struct.
                    xmlNode * node)      ///< XML node.
 {
-  int error_code;
+	const char *message[] = {
+    "Bad XML node",
+    "Bad type",
+    "Bad lambda",
+		"Unknown type",
+    "Bad x",
+    "Bad y",
+    "Bad z",
+    "Bad vx",
+    "Bad vy",
+    "Bad vz",
+    "Bad wx",
+    "Bad wy",
+    "Bad g",
+		"Bad time step type",
+		"Bad dt",
+		"Bad kt",
+		"Unknown time step type",
+		"Bad land type",
+		"Bad t",
+		"Unknown land type"
+	};
+  int e, error_code;
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_read_xml: start\n");
+  fprintf (stderr, "equation_read_xml: name=%s\n", node->name);
 #endif
   if (xmlStrcmp (node->name, XML_EQUATION))
-    goto exit_on_error;
+	  {
+			e = 0;
+      goto exit_on_error;
+		}
   eq->type = xml_node_get_uint (node, XML_TYPE, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 1;
+      goto exit_on_error;
+		}
   switch (eq->type)
     {
     case 0:
@@ -941,7 +975,10 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       eq->lambda
         = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
       if (error_code)
-        goto exit_on_error;
+	      {
+    			e = 2;
+          goto exit_on_error;
+    		}
       equation_acceleration = equation_acceleration_1;
       equation_solution = equation_solution_1;
       break;
@@ -949,7 +986,10 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       eq->lambda
         = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
       if (error_code)
-        goto exit_on_error;
+	      {
+    			e = 2;
+          goto exit_on_error;
+    		}
       equation_acceleration = equation_acceleration_2;
       equation_solution = equation_solution_2;
       break;
@@ -957,50 +997,87 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       eq->lambda
         = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
       if (error_code)
-        goto exit_on_error;
+	      {
+    			e = 2;
+          goto exit_on_error;
+    		}
       equation_acceleration = equation_acceleration_3;
       equation_solution = equation_solution_3;
       break;
     default:
+			e = 3;
       goto exit_on_error;
     }
   eq->r[0] = xml_node_get_float_with_default (node, XML_X, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 4;
+      goto exit_on_error;
+		}
   eq->r[1] = xml_node_get_float_with_default (node, XML_Y, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 5;
+      goto exit_on_error;
+		}
   eq->r[2] = xml_node_get_float (node, XML_Z, &error_code);
   if (error_code || eq->r[2] < 0.L)
-    goto exit_on_error;
+	  {
+			e = 6;
+      goto exit_on_error;
+		}
   eq->v[0] = xml_node_get_float_with_default (node, XML_VX, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 7;
+      goto exit_on_error;
+		}
   eq->v[1] = xml_node_get_float_with_default (node, XML_VY, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 8;
+      goto exit_on_error;
+		}
   eq->v[2] = xml_node_get_float_with_default (node, XML_VZ, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
-  eq->g = xml_node_get_float_with_default (node, XML_G, G, &error_code);
-  if (error_code)
-    goto exit_on_error;
+	  {
+			e = 9;
+      goto exit_on_error;
+		}
   eq->w[0] = xml_node_get_float_with_default (node, XML_WX, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 10;
+      goto exit_on_error;
+		}
   eq->w[1] = xml_node_get_float_with_default (node, XML_WY, 0.L, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 11;
+      goto exit_on_error;
+		}
+  eq->g = xml_node_get_float_with_default (node, XML_G, G, &error_code);
+  if (error_code)
+	  {
+			e = 12;
+      goto exit_on_error;
+		}
   eq->size_type = xml_node_get_uint (node, XML_TIME_STEP, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 13;
+      goto exit_on_error;
+		}
   switch (eq->size_type)
     {
     case 0:
       equation_step_size = equation_step_size_0;
       dt = xml_node_get_float (node, XML_DT, &error_code);
       if (error_code)
-        goto exit_on_error;
+	      {
+    			e = 14;
+          goto exit_on_error;
+    		}
       break;
     case 1:
       switch (eq->type)
@@ -1013,21 +1090,31 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
         }
       kt = xml_node_get_float (node, XML_KT, &error_code);
       if (error_code)
-        goto exit_on_error;
+	      {
+    			e = 15;
+          goto exit_on_error;
+    		}
       break;
     default:
+			e = 16;
       goto exit_on_error;
     }
   eq->land_type = xml_node_get_uint (node, XML_LAND, &error_code);
   if (error_code)
-    goto exit_on_error;
+	  {
+			e = 17;
+      goto exit_on_error;
+		}
   switch (eq->land_type)
     {
     case 0:
       equation_land = equation_land_0;
       eq->tf = xml_node_get_float (node, XML_T, &error_code);
       if (error_code || eq->tf < 0.)
-        goto exit_on_error;
+	      {
+    			e = 18;
+          goto exit_on_error;
+    		}
       break;
     case 1:
       equation_land = equation_land_1;
@@ -1039,6 +1126,7 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       equation_land = equation_land_3;
       break;
     default:
+    	e = 19;
       goto exit_on_error;
     }
 #if DEBUG_EQUATION
@@ -1049,6 +1137,10 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
 exit_on_error:
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_read_xml: error\n");
+#endif
+	g_free (error_message);
+	error_message = g_strconcat (message[e], "\n", NULL);
+#if DEBUG_EQUATION
   fprintf (stderr, "equation_read_xml: end\n");
 #endif
   return 0;

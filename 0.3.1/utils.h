@@ -36,6 +36,8 @@ OF SUCH DAMAGE.
 #ifndef UTILS__H
 #define UTILS__H 1
 
+extern char *error_message;
+
 long double distance (long double *r1, long double *r2);
 long double solve_quadratic_reduced (long double a, long double b,
                                      long double x1, long double x2);

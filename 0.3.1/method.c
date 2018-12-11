@@ -197,13 +197,23 @@ int
 method_read_xml (Method * m,    ///< Method struct.
                  xmlNode * node)        ///< XML node.
 {
-  int error_code;
+  const char *message[] = {
+		"Bad dt",
+		"Bad alpha",
+		"Bad beta",
+		"Bad error per time",
+		"Unknown error control type"
+	};
+  int e, error_code;
 #if DEBUG_METHOD
   fprintf (stderr, "method_read_xml: start\n");
 #endif
   m->error_dt = xml_node_get_uint (node, XML_TIME_STEP, &error_code);
   if (error_code)
-    goto fail;
+	  {
+			e = 0;
+      goto fail;
+		}
   switch (m->error_dt)
     {
     case 0:
@@ -212,15 +222,25 @@ method_read_xml (Method * m,    ///< Method struct.
     case 1:
       m->alpha = xml_node_get_float (node, XML_ALPHA, &error_code);
       if (error_code)
-        goto fail;
+	      {
+    			e = 1;
+          goto fail;
+    		}
       m->beta = xml_node_get_float (node, XML_BETA, &error_code);
       if (error_code)
-        goto fail;
+	      {
+    			e = 2;
+          goto fail;
+    		}
       m->emt = xml_node_get_float (node, XML_ERROR_TIME, &error_code);
       if (error_code)
-        goto fail;
+	      {
+    			e = 3;
+          goto fail;
+    		}
       break;
     default:
+			e = 4;
       goto fail;
     }
 #if DEBUG_METHOD
@@ -230,7 +250,8 @@ method_read_xml (Method * m,    ///< Method struct.
   return 1;
 
 fail:
-  printf ("Error reading method data\n");
+	g_free (error_message);
+	error_message = g_strconcat (message[e], "\n", NULL);
 #if DEBUG_METHOD
   fprintf (stderr, "method_read_xml: error\n");
   fprintf (stderr, "method_read_xml: end\n");

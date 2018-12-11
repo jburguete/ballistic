@@ -312,7 +312,7 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
 
       // checking trajectory end
       to = t;
-      if (equation_land (eq, &t, &dt))
+      if (equation_land (eq, to, &t, &dt))
         goto end;
 #if DEBUG_MULTI_STEPS
       fprintf (stderr, "multi_steps_run: t=%Lg dt=%Lg\n", t, dt);
@@ -375,7 +375,7 @@ multi_steps_run (MultiSteps * ms,       ///< MultiSteps struct.
       // checking trajectory end
       to = t;
       dto = dt;
-      if (equation_land (eq, &t, &dt))
+      if (equation_land (eq, to, &t, &dt))
         break;
 #if DEBUG_MULTI_STEPS
       fprintf (stderr, "multi_steps_run: t=%Lg dt=%Lg\n", t, dt);

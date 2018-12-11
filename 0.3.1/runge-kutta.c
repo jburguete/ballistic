@@ -40,6 +40,7 @@ OF SUCH DAMAGE.
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <libxml/parser.h>
+#include <glib.h>
 #include "config.h"
 #include "utils.h"
 #include "equation.h"
@@ -208,7 +209,7 @@ runge_kutta_init_variables (RungeKutta * rk)
 void
 runge_kutta_step (RungeKutta * rk,      ///< RungeKutta struct.
                   Equation * eq,        ///< Equation struct.
-                  long double t,        ///< actual time.
+                  long double t,        ///< current time.
                   long double dt)       ///< time step size.
 {
   Method *m;
@@ -216,6 +217,7 @@ runge_kutta_step (RungeKutta * rk,      ///< RungeKutta struct.
   unsigned int i, j, n;
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_step: start\n");
+  fprintf (stderr, "runge_kutta_step: t=%Lg dt=%Lg\n", t, dt);
 #endif
   m = RUNGE_KUTTA_METHOD (rk);
   memcpy (m->r0[0], r0, 3 * sizeof (long double));
@@ -257,6 +259,10 @@ runge_kutta_step (RungeKutta * rk,      ///< RungeKutta struct.
   memcpy (r1, m->r1[i], 3 * sizeof (long double));
   memcpy (r2, m->r2[i], 3 * sizeof (long double));
 #if DEBUG_RUNGE_KUTTA
+  for (i = 0; i < 3; ++i)
+    fprintf (stderr, "runge_kutta_step: r0[0][%u]=%Lg\n", i, r0[i]);
+  for (i = 0; i < 3; ++i)
+    fprintf (stderr, "runge_kutta_step: r1[0][%u]=%Lg\n", i, r1[i]);
   fprintf (stderr, "runge_kutta_step: end\n");
 #endif
 }
@@ -344,7 +350,7 @@ runge_kutta_run (RungeKutta * rk,       ///< RungeKutta struct.
 
       // checking trajectory end
       to = t;
-      if (equation_land (eq, &t, &dt))
+      if (equation_land (eq, to, &t, &dt))
         break;
 #if DEBUG_RUNGE_KUTTA
       fprintf (stderr, "runge_kutta_run: t=%Lg dt=%Lg\n", t, dt);
@@ -445,18 +451,28 @@ int
 runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
                       xmlNode * node)   ///< XML node.
 {
-  int error_code;
+	const char *message[] = {
+		"Bad type",
+		"Bad method data",
+		"Unknown Runge-Kutta method"
+	};
+	char *buffer;
+	int e, error_code;
   unsigned int type;
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read_xml: start\n");
 #endif
-  if (xmlStrcmp (node->name, XML_RUNGE_KUTTA))
-    goto fail;
   type = xml_node_get_uint (node, XML_TYPE, &error_code);
   if (error_code)
-    goto fail;
+	  {
+			e = 0;
+      goto fail;
+		}
   if (!method_read_xml (RUNGE_KUTTA_METHOD (rk), node))
-    goto fail;
+	  {
+			e = 1;
+      goto fail;
+		}
   switch (type)
     {
     case 1:
@@ -472,6 +488,7 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
       runge_kutta_init_4 (rk);
       break;
     default:
+			e = 2;
       goto fail;
     }
 #if DEBUG_RUNGE_KUTTA
@@ -481,7 +498,9 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
   return 1;
 
 fail:
-  printf ("Error reading Runge-Kutta data\n");
+	buffer = error_message;
+	error_message = (char *) g_strconcat (message[e], "\n", error_message, NULL);
+	g_free (buffer);
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read_xml: error\n");
   fprintf (stderr, "runge_kutta_read_xml: end\n");

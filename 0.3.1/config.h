@@ -40,6 +40,8 @@ OF SUCH DAMAGE.
 
 #define XML_ALPHA       (const xmlChar*)"alpha"
 ///< XML alpha label.
+#define XML_BALLISTIC   (const xmlChar*)"ballistic"
+///< XML ballistic label.
 #define XML_BETA        (const xmlChar*)"beta"
 ///< XML beta label.
 #define XML_DT          (const xmlChar*)"dt"
@@ -58,7 +60,7 @@ OF SUCH DAMAGE.
 ///< XML land label.
 #define XML_MULTI_STEPS (const xmlChar*)"multi-steps"
 ///< XML multi-steps label.
-#define XML_RUNGE_KUTTA (const xmlChar*)"runge_kutta"
+#define XML_RUNGE_KUTTA (const xmlChar*)"runge-kutta"
 ///< XML runge-kutta label.
 #define XML_STEPS       (const xmlChar*)"steps"
 ///< XML steps label.

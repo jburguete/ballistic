@@ -38,6 +38,7 @@ OF SUCH DAMAGE.
 
 extern char *error_message;
 
+void error_add (const char *message);
 long double distance (long double *r1, long double *r2);
 long double solve_quadratic_reduced (long double a, long double b,
                                      long double x1, long double x2);

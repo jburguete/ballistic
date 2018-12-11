@@ -80,24 +80,23 @@ const long double ms_eb3[4] = { -5.L / 18.L, 0.L, 0.L, -4.L / 9.L };
  * \return 1 on success, 0 on error.
  */
 int
-multi_steps_init (MultiSteps * ms,      ///< MultiSteps struct.
-                  unsigned int nsteps)  ///< number of steps.
+multi_steps_init (MultiSteps * ms)      ///< MultiSteps struct.
 {
   Method *m;
 #if DEBUG_MULTI_STEPS
   fprintf (stderr, "multi_steps_init: start\n");
 #endif
   m = MULTI_STEPS_METHOD (ms);
-  switch (nsteps)
+  switch (ms->type)
     {
-    case 2:
+    case 1:
       method_init (m, 3, 2);
       ms->a = ms_a2;
       ms->c = ms_c2;
       ms->ea = ms_ea2;
       ms->eb = ms_eb2;
       break;
-    case 3:
+    case 2:
       method_init (m, 4, 3);
       ms->a = ms_a3;
       ms->c = ms_c3;
@@ -424,33 +423,6 @@ multi_steps_delete (MultiSteps * ms)    ///< RungeKutta struct.
 }
 
 /**
- * Function to read on a file the multi-steps method input data.
- *
- * \return 1 on success, 0 on error.
- */
-int
-multi_steps_read (MultiSteps * ms,      ///< MultiSteps struct.
-                  FILE * file)  ///< input file.
-{
-  int e;
-#if DEBUG_MULTI_STEPS
-  fprintf (stderr, "multi_steps_read: start\n");
-#endif
-  if (!method_read (MULTI_STEPS_METHOD (ms), file))
-    e = 0;
-  else
-    e = runge_kutta_read (MULTI_STEPS_RUNGE_KUTTA (ms), file);
-#if DEBUG_MULTI_STEPS
-  if (e)
-    fprintf (stderr, "multi_steps_read: success\n");
-  else
-    fprintf (stderr, "multi_steps_read: error\n");
-  fprintf (stderr, "multi_steps_read: end\n");
-#endif
-  return e;
-}
-
-/**
  * Function to read on a XML node the multi-steps method input data.
  *
  * \return 1 on success, 0 on error.
@@ -459,20 +431,45 @@ int
 multi_steps_read_xml (MultiSteps * ms,  ///< MultiSteps struct.
                       xmlNode * node)   ///< XML node.
 {
+	char *message[] = {
+		NULL,
+		"Bad steps number",
+		"Bad numerical method data",
+		"No Runge-Kutta XML node",
+		"Bad Runge-Kutta XML node",
+		"Bad Runge-Kutta method data",
+		"Bad multi-steps data"
+	};
   int e, error_code;
 #if DEBUG_MULTI_STEPS
   fprintf (stderr, "multi_steps_read_xml: start\n");
 #endif
-  if (xmlStrcmp (node->name, XML_MULTI_STEPS) || !node->children)
-    e = 0;
+  ms->type = xml_node_get_uint (node, XML_TYPE, &error_code);
+  if (error_code || !ms->type)
+    e = 1;
+	else if (!method_read_xml (MULTI_STEPS_METHOD (ms), node))
+    e = 2;
   else
-    {
-      ms->steps = xml_node_get_uint (node, XML_STEPS, &error_code);
-      if (error_code || !method_read_xml (MULTI_STEPS_METHOD (ms), node))
-        e = 0;
-      else
-        e = runge_kutta_read_xml (MULTI_STEPS_RUNGE_KUTTA (ms), node->children);
-    }
+	  {
+			node = node->children;
+			if (!node)
+				e = 3;
+			else if (xmlStrcmp (node->name, XML_RUNGE_KUTTA))
+				e = 4;
+			else if (!runge_kutta_read_xml (MULTI_STEPS_RUNGE_KUTTA (ms), node))
+				e = 5;
+			else if (!multi_steps_init (ms))
+				e = 6;
+			else
+				e = 0;
+		}
+	if (e)
+	{
+		error_add (message[e]);
+		e = 0;
+	}
+	else
+		e = 1;
 #if DEBUG_MULTI_STEPS
   if (e)
     fprintf (stderr, "multi_steps_read: success\n");

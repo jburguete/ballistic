@@ -120,7 +120,7 @@ static const long double rk_t4[4] = { 0.5L, 0.5L, 1.L, 1.L };
 /**
  * Function to init the coefficients of the 1st order Runge-Kutta method.
  */
-void
+static void
 runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -138,7 +138,7 @@ runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 2nd order Runge-Kutta method.
  */
-void
+static void
 runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -156,7 +156,7 @@ runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 3rd order Runge-Kutta method.
  */
-void
+static void
 runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -174,7 +174,7 @@ runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 4th order Runge-Kutta method.
  */
-void
+static void
 runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -194,10 +194,13 @@ runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 void
 runge_kutta_init_variables (RungeKutta * rk)
 {
+	Method *m;
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_init_variables: start\n");
 #endif
-  method_init_variables (RUNGE_KUTTA_METHOD (rk));
+	m = RUNGE_KUTTA_METHOD (rk);
+	m->nsteps = 1;
+  method_init_variables (m);
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_init_variables: end\n");
 #endif
@@ -394,55 +397,6 @@ runge_kutta_delete (RungeKutta * rk)    ///< RungeKutta struct.
 }
 
 /**
- * Function to read the Runge-Kutta method data on a file.
- *
- * \return 1 on success, 0 on error.
- */
-int
-runge_kutta_read (RungeKutta * rk,      ///< RungeKutta struct.
-                  FILE * file)  ///< file.
-{
-  unsigned int type;
-#if DEBUG_RUNGE_KUTTA
-  fprintf (stderr, "runge_kutta_read: start\n");
-#endif
-  if (fscanf (file, "%*s%*s%u", &type) != 1)
-    goto fail;
-  if (!method_read (RUNGE_KUTTA_METHOD (rk), file))
-    goto fail;
-  switch (type)
-    {
-    case 1:
-      runge_kutta_init_1 (rk);
-      break;
-    case 2:
-      runge_kutta_init_2 (rk);
-      break;
-    case 3:
-      runge_kutta_init_3 (rk);
-      break;
-    case 4:
-      runge_kutta_init_4 (rk);
-      break;
-    default:
-      goto fail;
-    }
-#if DEBUG_RUNGE_KUTTA
-  fprintf (stderr, "runge_kutta_read: success\n");
-  fprintf (stderr, "runge_kutta_read: end\n");
-#endif
-  return 1;
-
-fail:
-  printf ("Error reading Runge-Kutta data\n");
-#if DEBUG_RUNGE_KUTTA
-  fprintf (stderr, "runge_kutta_read: error\n");
-  fprintf (stderr, "runge_kutta_read: end\n");
-#endif
-  return 0;
-}
-
-/**
  * Function to read the Runge-Kutta method data on a XML node.
  *
  * \return 1 on success, 0 on error.
@@ -456,7 +410,6 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
     "Bad method data",
     "Unknown Runge-Kutta method"
   };
-  char *buffer;
   int e, error_code;
   unsigned int type;
 #if DEBUG_RUNGE_KUTTA
@@ -498,9 +451,7 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
   return 1;
 
 fail:
-  buffer = error_message;
-  error_message = (char *) g_strconcat (message[e], "\n", error_message, NULL);
-  g_free (buffer);
+  error_add (message[e]);
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read_xml: error\n");
   fprintf (stderr, "runge_kutta_read_xml: end\n");

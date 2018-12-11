@@ -39,12 +39,25 @@ OF SUCH DAMAGE.
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <libxml/parser.h>
+#include <glib.h>
 #include "config.h"
 #include "equation.h"
 
 #define DEBUG_UTILS 0           ///< macro to debug the useful functions.
 
 char *error_message = NULL;     ///< error message string.
+
+/**
+ * Function to add an error message.
+ */
+void
+error_add (const char *message) ///< error message.
+{
+	char *buffer;
+  buffer = error_message;
+  error_message = (char *) g_strconcat (message, "\n", buffer, NULL);
+  g_free (buffer);
+}
 
 /**
  * Function to calculate the distance between two vectors.

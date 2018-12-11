@@ -79,7 +79,6 @@ extern unsigned long int nevaluations;
 
 long double equation_solve (Equation * eq, long double *r0, long double *r1);
 void equation_init (Equation * eq, gsl_rng * rng);
-int equation_read (Equation * eq, FILE * file);
-int equation_read_xml (Equation * eq, xmlNode * node);
+int equation_read_xml (Equation * eq, xmlNode * node, unsigned int initial);
 
 #endif

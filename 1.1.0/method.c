@@ -76,6 +76,7 @@ method_init_variables (Method * m)      ///< Method struct.
   unsigned int i, n;
 #if DEBUG_METHOD
   fprintf (stderr, "method_init_variables: start\n");
+  fprintf (stderr, "method_init_variables: nsteps=%u\n", m->nsteps);
 #endif
   n = m->nsteps + 1;
   m->r0 = (long double **) g_slice_alloc (n * sizeof (long double *));
@@ -125,6 +126,7 @@ method_delete (Method * m)      ///< Method struct.
   unsigned int i, n;
 #if DEBUG_METHOD
   fprintf (stderr, "method_delete: start\n");
+  fprintf (stderr, "method_delete: nsteps=%u\n", m->nsteps);
 #endif
   n = i = m->nsteps + 1;
   do
@@ -141,51 +143,6 @@ method_delete (Method * m)      ///< Method struct.
 #if DEBUG_METHOD
   fprintf (stderr, "method_delete: end\n");
 #endif
-}
-
-/**
- * Function to read the numerical method data on a file.
- *
- * \return 1 on success, 0 on error.
- */
-int
-method_read (Method * m,        ///< Method struct.
-             FILE * file)       ///< file.
-{
-#if DEBUG_METHOD
-  fprintf (stderr, "method_read: start\n");
-#endif
-  if (fscanf (file, "%*s%*s%u", &m->error_dt) != 1)
-    goto fail;
-  switch (m->error_dt)
-    {
-    case 0:
-      m->emt = 0.L;
-      break;
-    case 1:
-      if (fscanf (file, "%*s%*s%Lf", &m->alpha) != 1)
-        goto fail;
-      if (fscanf (file, "%*s%*s%Lf", &m->beta) != 1)
-        goto fail;
-      if (fscanf (file, "%*s%*s%Lf", &m->emt) != 1)
-        goto fail;
-      break;
-    default:
-      goto fail;
-    }
-#if DEBUG_METHOD
-  fprintf (stderr, "method_read: success\n");
-  fprintf (stderr, "method_read: end\n");
-#endif
-  return 1;
-
-fail:
-  printf ("Error reading method data\n");
-#if DEBUG_METHOD
-  fprintf (stderr, "method_read: error\n");
-  fprintf (stderr, "method_read: end\n");
-#endif
-  return 0;
 }
 
 /**
@@ -250,8 +207,7 @@ method_read_xml (Method * m,    ///< Method struct.
   return 1;
 
 fail:
-  g_free (error_message);
-  error_message = g_strconcat (message[e], "\n", NULL);
+  error_add (message[e]);
 #if DEBUG_METHOD
   fprintf (stderr, "method_read_xml: error\n");
   fprintf (stderr, "method_read_xml: end\n");

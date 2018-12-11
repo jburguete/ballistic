@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<convergence trajectories="1000" convergence="5" factor="0.5">
+	<equation type="3" z="2" vmin="20" vmax="30" vertical-angle="25" wmax="5" time-step="0" land="2" dt="0.1" lambda-min="0.1" lambda-max="1"/>
+	<multi-steps type="2" time-step="0" alpha="1.5" beta="0.6" error-time="0.01">
+		<runge-kutta type="2" time-step="0" alpha="1.5" beta="0.6" error-time="0.01"/>
+	</multi-steps>
+</convergence>

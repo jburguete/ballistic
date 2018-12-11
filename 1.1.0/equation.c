@@ -39,7 +39,6 @@ OF SUCH DAMAGE.
 #include <math.h>
 #include <gsl/gsl_rng.h>
 #include <libxml/parser.h>
-#include <glib.h>
 #include "config.h"
 #include "utils.h"
 #include "equation.h"
@@ -803,134 +802,18 @@ equation_init (Equation * eq,   ///< Equation struct.
 }
 
 /**
- * Function to read the equation data on a file.
- *
- * \return 1 on success, 0 on error.
- */
-int
-equation_read (Equation * eq,   ///< Equation struct.
-               FILE * file)     ///< file.
-{
-#if DEBUG_EQUATION
-  fprintf (stderr, "equation_read: start\n");
-#endif
-  if (fscanf (file, "%*s%*s%u", &eq->type) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%Lf", &eq->r[2]) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%Lf", &eq->min_velocity) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%Lf", &eq->max_velocity) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%Lf", &eq->vertical_angle) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%Lf", &eq->max_wind) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%u", &eq->size_type) != 1)
-    goto exit_on_error;
-  if (fscanf (file, "%*s%*s%u", &eq->land_type) != 1)
-    goto exit_on_error;
-  switch (eq->type)
-    {
-    case 0:
-      equation_acceleration = equation_acceleration_0;
-      equation_solution = equation_solution_0;
-      break;
-    case 1:
-      if (fscanf (file, "%*s%*s%Lf", &eq->min_lambda) != 1)
-        goto exit_on_error;
-      if (fscanf (file, "%*s%*s%Lf", &eq->max_lambda) != 1)
-        goto exit_on_error;
-      equation_acceleration = equation_acceleration_1;
-      equation_solution = equation_solution_1;
-      break;
-    case 2:
-      if (fscanf (file, "%*s%*s%Lf", &eq->min_lambda) != 1)
-        goto exit_on_error;
-      if (fscanf (file, "%*s%*s%Lf", &eq->max_lambda) != 1)
-        goto exit_on_error;
-      equation_acceleration = equation_acceleration_2;
-      equation_solution = equation_solution_2;
-      break;
-    case 3:
-      if (fscanf (file, "%*s%*s%Lf", &eq->min_lambda) != 1)
-        goto exit_on_error;
-      if (fscanf (file, "%*s%*s%Lf", &eq->max_lambda) != 1)
-        goto exit_on_error;
-      equation_acceleration = equation_acceleration_3;
-      equation_solution = equation_solution_3;
-      break;
-    default:
-      goto exit_on_error;
-    }
-  switch (eq->size_type)
-    {
-    case 0:
-      equation_step_size = equation_step_size_0;
-      if (fscanf (file, "%*s%*s%Lf", &dt) != 1)
-        goto exit_on_error;
-      break;
-    case 1:
-      switch (eq->type)
-        {
-        case 1:
-          equation_step_size = equation_step_size_1;
-          break;
-        case 2:
-          equation_step_size = equation_step_size_2;
-        }
-      if (fscanf (file, "%*s%*s%Lf", &kt) != 1)
-        goto exit_on_error;
-      break;
-    default:
-      goto exit_on_error;
-    }
-  switch (eq->land_type)
-    {
-    case 0:
-      equation_land = equation_land_0;
-      if (fscanf (file, "%*s%*s%Lf", &eq->tf) != 1)
-        goto exit_on_error;
-      break;
-    case 1:
-      equation_land = equation_land_1;
-      break;
-    case 2:
-      equation_land = equation_land_2;
-      break;
-    case 3:
-      equation_land = equation_land_3;
-      break;
-    default:
-      goto exit_on_error;
-    }
-  eq->g = G;
-#if DEBUG_EQUATION
-  fprintf (stderr, "equation_read: success\n");
-  fprintf (stderr, "equation_read: end\n");
-#endif
-  return 1;
-exit_on_error:
-#if DEBUG_EQUATION
-  fprintf (stderr, "equation_read: error\n");
-  fprintf (stderr, "equation_read: end\n");
-#endif
-  return 0;
-}
-
-/**
  * Function to read the equation data on a XML node.
  *
  * \return 1 on success, 0 on error.
  */
 int
 equation_read_xml (Equation * eq,       ///< Equation struct.
-                   xmlNode * node)      ///< XML node.
+                   xmlNode * node,      ///< XML node.,
+									 unsigned int initial)   ///< type of initial conditions.
 {
   const char *message[] = {
     "Bad XML node",
     "Bad type",
-    "Bad lambda",
     "Unknown type",
     "Bad x",
     "Bad y",
@@ -940,6 +823,13 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
     "Bad vz",
     "Bad wx",
     "Bad wy",
+    "Bad lambda",
+		"Bad minimum velocity",
+		"Bad maximum velocity",
+		"Bad vertical angle",
+		"Bad maximum wind",
+		"Bad minimum lambda",
+		"Bad maximum lambda",
     "Bad g",
     "Bad time step type",
     "Bad dt",
@@ -972,100 +862,152 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       equation_solution = equation_solution_0;
       break;
     case 1:
-      eq->lambda
-        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
-      if (error_code)
-        {
-          e = 2;
-          goto exit_on_error;
-        }
       equation_acceleration = equation_acceleration_1;
       equation_solution = equation_solution_1;
       break;
     case 2:
-      eq->lambda
-        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
-      if (error_code)
-        {
-          e = 2;
-          goto exit_on_error;
-        }
       equation_acceleration = equation_acceleration_2;
       equation_solution = equation_solution_2;
       break;
     case 3:
-      eq->lambda
-        = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, &error_code);
-      if (error_code)
-        {
-          e = 2;
-          goto exit_on_error;
-        }
       equation_acceleration = equation_acceleration_3;
       equation_solution = equation_solution_3;
       break;
     default:
-      e = 3;
+      e = 2;
       goto exit_on_error;
     }
   eq->r[0] = xml_node_get_float_with_default (node, XML_X, 0.L, &error_code);
   if (error_code)
     {
-      e = 4;
+      e = 3;
       goto exit_on_error;
     }
   eq->r[1] = xml_node_get_float_with_default (node, XML_Y, 0.L, &error_code);
   if (error_code)
     {
-      e = 5;
+      e = 4;
       goto exit_on_error;
     }
   eq->r[2] = xml_node_get_float (node, XML_Z, &error_code);
   if (error_code || eq->r[2] < 0.L)
     {
-      e = 6;
+      e = 5;
       goto exit_on_error;
     }
-  eq->v[0] = xml_node_get_float_with_default (node, XML_VX, 0.L, &error_code);
-  if (error_code)
-    {
-      e = 7;
-      goto exit_on_error;
-    }
-  eq->v[1] = xml_node_get_float_with_default (node, XML_VY, 0.L, &error_code);
-  if (error_code)
-    {
-      e = 8;
-      goto exit_on_error;
-    }
-  eq->v[2] = xml_node_get_float_with_default (node, XML_VZ, 0.L, &error_code);
-  if (error_code)
-    {
-      e = 9;
-      goto exit_on_error;
-    }
-  eq->w[0] = xml_node_get_float_with_default (node, XML_WX, 0.L, &error_code);
-  if (error_code)
-    {
-      e = 10;
-      goto exit_on_error;
-    }
-  eq->w[1] = xml_node_get_float_with_default (node, XML_WY, 0.L, &error_code);
-  if (error_code)
-    {
-      e = 11;
-      goto exit_on_error;
-    }
+	if (initial)
+	  {
+      eq->v[0] 
+				= xml_node_get_float_with_default (node, XML_VX, 0.L, &error_code);
+      if (error_code)
+        {
+          e = 6;
+          goto exit_on_error;
+        }
+      eq->v[1] 
+				= xml_node_get_float_with_default (node, XML_VY, 0.L, &error_code);
+      if (error_code)
+        {
+          e = 7;
+          goto exit_on_error;
+        }
+      eq->v[2] 
+				= xml_node_get_float_with_default (node, XML_VZ, 0.L, &error_code);
+      if (error_code)
+        {
+          e = 8;
+          goto exit_on_error;
+        }
+      eq->w[0] 
+				= xml_node_get_float_with_default (node, XML_WX, 0.L, &error_code);
+      if (error_code)
+        {
+          e = 9;
+          goto exit_on_error;
+        }
+      eq->w[1]
+			 	= xml_node_get_float_with_default (node, XML_WY, 0.L, &error_code);
+      if (error_code)
+        {
+          e = 10;
+          goto exit_on_error;
+        }
+      switch (eq->type)
+        {
+        case 1:
+        case 2:
+        case 3:
+          eq->lambda = xml_node_get_float_with_default (node, XML_LAMBDA, 0.L, 
+							                                          &error_code);
+          if (error_code)
+            {
+              e = 11;
+              goto exit_on_error;
+            }
+				}
+		}
+	else
+	  {
+      eq->min_velocity
+				= xml_node_get_float_with_default (node, XML_VMIN, 0.L, &error_code);
+			if (error_code || eq->min_velocity < 0.L)
+			  {
+					e = 12;
+					goto exit_on_error;
+				}
+      eq->max_velocity = xml_node_get_float (node, XML_VMAX, &error_code);
+			if (error_code || eq->max_velocity <= 0.L)
+			  {
+					e = 13;
+					goto exit_on_error;
+				}
+      eq->vertical_angle
+				= xml_node_get_float (node, XML_VERTICAL_ANGLE, &error_code);
+			if (error_code)
+			  {
+					e = 14;
+					goto exit_on_error;
+				}
+      eq->max_wind 
+				= xml_node_get_float_with_default (node, XML_WMAX, 0.L, &error_code);
+			if (error_code || eq->max_wind < 0.L)
+			  {
+					e = 15;
+					goto exit_on_error;
+				}
+      switch (eq->type)
+        {
+        case 1:
+        case 2:
+        case 3:
+          eq->min_lambda
+						= xml_node_get_float_with_default (node, XML_LAMBDA_MIN, 0.L, 
+								                               &error_code);
+				  if (error_code)
+					  {
+						  e = 16;
+						  goto exit_on_error;
+						}
+          eq->max_lambda
+						= xml_node_get_float_with_default (node, XML_LAMBDA_MAX, 0.L, 
+								                               &error_code);
+				  if (error_code || eq->max_lambda < eq->min_lambda)
+					  {
+						  e = 17;
+						  goto exit_on_error;
+						}
+			   }	
+		}
   eq->g = xml_node_get_float_with_default (node, XML_G, G, &error_code);
   if (error_code)
     {
-      e = 12;
+      e = 18;
       goto exit_on_error;
     }
   eq->size_type = xml_node_get_uint (node, XML_TIME_STEP, &error_code);
   if (error_code)
     {
-      e = 13;
+      e = 19;
       goto exit_on_error;
     }
   switch (eq->size_type)
@@ -1075,7 +1017,7 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       dt = xml_node_get_float (node, XML_DT, &error_code);
       if (error_code)
         {
-          e = 14;
+          e = 20;
           goto exit_on_error;
         }
       break;
@@ -1091,18 +1033,18 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       kt = xml_node_get_float (node, XML_KT, &error_code);
       if (error_code)
         {
-          e = 15;
+          e = 21;
           goto exit_on_error;
         }
       break;
     default:
-      e = 16;
+      e = 22;
       goto exit_on_error;
     }
   eq->land_type = xml_node_get_uint (node, XML_LAND, &error_code);
   if (error_code)
     {
-      e = 17;
+      e = 23;
       goto exit_on_error;
     }
   switch (eq->land_type)
@@ -1112,7 +1054,7 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       eq->tf = xml_node_get_float (node, XML_T, &error_code);
       if (error_code || eq->tf < 0.)
         {
-          e = 18;
+          e = 24;
           goto exit_on_error;
         }
       break;
@@ -1126,7 +1068,7 @@ equation_read_xml (Equation * eq,       ///< Equation struct.
       equation_land = equation_land_3;
       break;
     default:
-      e = 19;
+      e = 25;
       goto exit_on_error;
     }
 #if DEBUG_EQUATION
@@ -1138,8 +1080,7 @@ exit_on_error:
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_read_xml: error\n");
 #endif
-  g_free (error_message);
-  error_message = g_strconcat (message[e], "\n", NULL);
+  error_add (message[e]);
 #if DEBUG_EQUATION
   fprintf (stderr, "equation_read_xml: end\n");
 #endif

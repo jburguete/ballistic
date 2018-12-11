@@ -48,7 +48,7 @@ typedef struct
   const long double *c;         ///< array of c-coefficients.
   const long double *ea;        ///< array of a-error coefficients.
   const long double *eb;        ///< array of b-error coefficients.
-  unsigned int steps;           ///< steps number.
+  unsigned int type;            ///< method type.
 } MultiSteps;
 
 #define MULTI_STEPS_METHOD(ms) ((Method *)ms->method)
@@ -56,11 +56,10 @@ typedef struct
 #define MULTI_STEPS_RUNGE_KUTTA(ms) ((RungeKutta *)ms->runge_kutta)
 ///< macro to access to RungeKutta struct data on a MultiSteps struct.
 
-int multi_steps_init (MultiSteps * ms, unsigned int nsteps);
+int multi_steps_init (MultiSteps * ms);
 void multi_steps_init_variables (MultiSteps * ms);
 long double multi_steps_run (MultiSteps * ms, Equation * eq);
 void multi_steps_delete (MultiSteps * ms);
-int multi_steps_read (MultiSteps * ms, FILE * file);
 int multi_steps_read_xml (MultiSteps * ms, xmlNode * node);
 
 #endif

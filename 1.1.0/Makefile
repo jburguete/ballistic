@@ -15,9 +15,13 @@ ballistic: $(OBJS)
 
 ballisticpgo: $(PGOOBJS)
 	$(CC) $(PGOGEN) $(PGOOBJS) $(LIBS) -o ballisticpgo
-	./ballisticpgo case0.xml out
-	./ballisticpgo case-s.xml out
-	#sh scriptpgo.sh
+	./ballisticpgo ../tests/case0.xml out
+	./ballisticpgo ../tests/case1.xml out
+	./ballisticpgo ../tests/case2.xml out
+	./ballisticpgo ../tests/case2ms.xml out
+	./ballisticpgo ../tests/case3.xml out
+	./ballisticpgo ../tests/case-s.xml out
+	sh scriptpgo.sh
 
 utils.pgo: utils.c utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) utils.c -o utils.pgo

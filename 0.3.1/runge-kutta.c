@@ -451,28 +451,28 @@ int
 runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
                       xmlNode * node)   ///< XML node.
 {
-	const char *message[] = {
-		"Bad type",
-		"Bad method data",
-		"Unknown Runge-Kutta method"
-	};
-	char *buffer;
-	int e, error_code;
+  const char *message[] = {
+    "Bad type",
+    "Bad method data",
+    "Unknown Runge-Kutta method"
+  };
+  char *buffer;
+  int e, error_code;
   unsigned int type;
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read_xml: start\n");
 #endif
   type = xml_node_get_uint (node, XML_TYPE, &error_code);
   if (error_code)
-	  {
-			e = 0;
+    {
+      e = 0;
       goto fail;
-		}
+    }
   if (!method_read_xml (RUNGE_KUTTA_METHOD (rk), node))
-	  {
-			e = 1;
+    {
+      e = 1;
       goto fail;
-		}
+    }
   switch (type)
     {
     case 1:
@@ -488,7 +488,7 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
       runge_kutta_init_4 (rk);
       break;
     default:
-			e = 2;
+      e = 2;
       goto fail;
     }
 #if DEBUG_RUNGE_KUTTA
@@ -498,9 +498,9 @@ runge_kutta_read_xml (RungeKutta * rk,  ///< RungeKutta struct.
   return 1;
 
 fail:
-	buffer = error_message;
-	error_message = (char *) g_strconcat (message[e], "\n", error_message, NULL);
-	g_free (buffer);
+  buffer = error_message;
+  error_message = (char *) g_strconcat (message[e], "\n", error_message, NULL);
+  g_free (buffer);
 #if DEBUG_RUNGE_KUTTA
   fprintf (stderr, "runge_kutta_read_xml: error\n");
   fprintf (stderr, "runge_kutta_read_xml: end\n");

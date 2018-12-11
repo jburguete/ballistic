@@ -101,7 +101,7 @@ fail:
 void
 show_error ()
 {
-	printf ("ERROR!\n%s", error_message);
+  printf ("ERROR!\n%s", error_message);
 }
 
 /**
@@ -281,81 +281,81 @@ convergence_run (char *input,   ///< input file name.
 int
 ballistic_run (xmlDoc * doc)    ///< input file name.
 {
-	const char *message[] = {
-		NULL,
-		"Unable to open the XML root element",
-		"Bad XML file",
-		"No equation XML node",
-		"Bad equation data",
-		"No numerical method XML node",
-		"Bad Runge-Kutta data",
-		"Bad multi-steps data",
-		"Unknown numerical method"
-	};
+  const char *message[] = {
+    NULL,
+    "Unable to open the XML root element",
+    "Bad XML file",
+    "No equation XML node",
+    "Bad equation data",
+    "No numerical method XML node",
+    "Bad Runge-Kutta data",
+    "Bad multi-steps data",
+    "Unknown numerical method"
+  };
   MultiSteps ms[1];
   RungeKutta rk[1];
   Equation eq[1];
   long double sr0[3], sr1[3];
   xmlNode *node;
-	char *buffer;
+  char *buffer;
   long double t;
-	int e;
+  int e;
 #if DEBUG_BALLISTIC
   fprintf (stderr, "ballistic_run: start\n");
 #endif
-	e = 0;
+  e = 0;
   ms->steps = 0;
   node = xmlDocGetRootElement (doc);
-	if (!node)
-	  {
-		  e = 1;
-		  goto end;
-	  }
-	if (xmlStrcmp (node->name, XML_BALLISTIC))
-	  {
-		  e = 2;
-			goto end;
-		}
-	node = node->children;
-	if (!node)
-	  {
-		  e = 3;
-			goto end;
-		}
-	if (!equation_read_xml (eq, node))
-	  {
-		  e = 4;
-			goto end;
-		}
-	node = node->next;
-	if (!node)
-	  {
-		  e = 5;
-			goto end;
-		}
+  if (!node)
+    {
+      e = 1;
+      goto end;
+    }
+  if (xmlStrcmp (node->name, XML_BALLISTIC))
+    {
+      e = 2;
+      goto end;
+    }
+  node = node->children;
+  if (!node)
+    {
+      e = 3;
+      goto end;
+    }
+  if (!equation_read_xml (eq, node))
+    {
+      e = 4;
+      goto end;
+    }
+  node = node->next;
+  if (!node)
+    {
+      e = 5;
+      goto end;
+    }
   if (!xmlStrcmp (node->name, XML_RUNGE_KUTTA))
     {
       if (!runge_kutta_read_xml (rk, node))
-	      {
-		      e = 6;
-    			goto end;
-		    }
+        {
+          e = 6;
+          goto end;
+        }
       runge_kutta_init_variables (rk);
     }
   else if (!xmlStrcmp (node->name, XML_MULTI_STEPS))
     {
       if (!multi_steps_read_xml (ms, node) || !multi_steps_init (ms, ms->steps))
-	      {
-    		  e = 7;
-		    	goto end;
-		    }
+        {
+          e = 7;
+          goto end;
+        }
       multi_steps_init_variables (ms);
     }
-	else
-	  {
-			e = 8;
-			goto end;
-		}
+  else
+    {
+      e = 8;
+      goto end;
+    }
   nevaluations = 0l;
 #if DEBUG_BALLISTIC
   fprintf (stderr, "ballistic_run: initing variables\n");
@@ -398,10 +398,10 @@ end:
 #if DEBUG_BALLISTIC
   fprintf (stderr, "ballistic_run: end\n");
 #endif
-	buffer = error_message;
-	error_message = (char *) g_strconcat (message[e], "\n", buffer, NULL);
-	g_free (buffer);
-	return e;
+  buffer = error_message;
+  error_message = (char *) g_strconcat (message[e], "\n", buffer, NULL);
+  g_free (buffer);
+  return e;
 }
 
 /**
@@ -413,28 +413,28 @@ int
 main (int argn,                 ///< number of arguments.
       char **argc)              ///< array of argument chars.
 {
-	xmlDoc *doc;
-	int e;
+  xmlDoc *doc;
+  int e;
 #if DEBUG_BALLISTIC
   fprintf (stderr, "main: start\n");
 #endif
-	xmlKeepBlanksDefault (0);
-	switch (argn)
-	  {
-		case 3:
+  xmlKeepBlanksDefault (0);
+  switch (argn)
+    {
+    case 3:
       return convergence_run (argc[1], argc[2]);
-		case 2:
+    case 2:
       doc = xmlParseFile (argc[1]);
-			if (!doc)
-				return 2;
+      if (!doc)
+        return 2;
       e = ballistic_run (doc);
-			xmlFreeDoc (doc);
-			if (e)
-			  {
-				  show_error ();
-					g_free (error_message);
-				}
-			return e;
+      xmlFreeDoc (doc);
+      if (e)
+        {
+          show_error ();
+          g_free (error_message);
+        }
+      return e;
     default:
       printf ("The syntax is:\n./runge-kutta input_file output_file\n");
       return 1;

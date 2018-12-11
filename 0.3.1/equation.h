@@ -71,8 +71,8 @@ extern void (*equation_acceleration) (Equation * eq, long double *r0,
 extern void (*equation_solution) (Equation * eq, long double *r0,
                                   long double *r1, long double t);
 extern long double (*equation_step_size) (Equation * eq);
-extern int (*equation_land) (Equation * eq, long double, long double *t, 
-		                         long double *dt);
+extern int (*equation_land) (Equation * eq, long double, long double *t,
+                             long double *dt);
 extern long double kt;
 extern long double dt;
 extern unsigned long int nevaluations;

@@ -15,10 +15,9 @@ ballistic: $(OBJS)
 
 ballisticpgo: $(PGOOBJS)
 	$(CC) $(PGOGEN) $(PGOOBJS) $(LIBS) -o ballisticpgo
-	cp script.sh scriptpgo.sh
-	sed -i 's/ballistic/ballisticpgo/g' scriptpgo.sh
 	./ballisticpgo case-s out
-	#sh scriptpgo.sh
+	./ballisticpgo case-s.xml
+	sh scriptpgo.sh
 
 utils.pgo: utils.c utils.h config.h Makefile
 	$(CC) $(CFLAGS) $(PGOGEN) utils.c -o utils.pgo

@@ -46,7 +46,7 @@ OF SUCH DAMAGE.
 #include "equation.h"
 #include "method.h"
 
-#define DEBUG_METHOD 1
+#define DEBUG_METHOD 0
 ///< macro to debug the numerical method functions.
 
 /**

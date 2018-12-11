@@ -47,7 +47,7 @@ OF SUCH DAMAGE.
 #include "method.h"
 #include "runge-kutta.h"
 
-#define DEBUG_RUNGE_KUTTA 1     ///< macro to debug the Runge-Kutta functions.
+#define DEBUG_RUNGE_KUTTA 0     ///< macro to debug the Runge-Kutta functions.
 
 ///> 1st array of 1st order Runge-Kutta b coefficients.
 static const long double rk_b1_1[1] = { 1.L };

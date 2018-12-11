@@ -44,7 +44,7 @@ OF SUCH DAMAGE.
 #include "utils.h"
 #include "equation.h"
 
-#define DEBUG_EQUATION 1        ///< macro to debug the equation functions.
+#define DEBUG_EQUATION 0        ///< macro to debug the equation functions.
 
 long double r0[3];              ///< position vector.
 long double r1[3];              ///< velocity vector.

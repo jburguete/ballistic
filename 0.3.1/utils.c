@@ -42,7 +42,7 @@ OF SUCH DAMAGE.
 #include "config.h"
 #include "equation.h"
 
-#define DEBUG_UTILS 1           ///< macro to debug the useful functions.
+#define DEBUG_UTILS 0           ///< macro to debug the useful functions.
 
 char *error_message = NULL;     ///< error message string.
 

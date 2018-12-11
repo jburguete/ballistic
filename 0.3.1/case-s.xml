@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<ballistic>
+	<equation type="1" z="2" vx="7.275961795092316" vy="-9.239623919236907" time-step="0" dt="0.2" land="3" lambda="1" g="9.794969160226482785"/>
+	<runge-kutta type="4" time-step="0"/>
+</ballistic>

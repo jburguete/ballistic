@@ -49,7 +49,7 @@ OF SUCH DAMAGE.
 #include "runge-kutta.h"
 #include "multi-steps.h"
 
-#define DEBUG_BALLISTIC 1       ///< macro to debug the ballistic functions.
+#define DEBUG_BALLISTIC 0       ///< macro to debug the ballistic functions.
 
 long double convergence_factor;
 ///< convergence factor.

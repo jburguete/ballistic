@@ -78,7 +78,7 @@ for i in 2 3; do
 	sed -i "s/convergence=\"10\"/convergence=\"2\"/g" tmp.xml
 	sed -i "s/time-step=\"1\"/time-step=\"0\"/g" tmp.xml
 	sed -i "s/kt=\"0.6\"/dt=\"0.05\"/g" tmp.xml
-	sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
+	#sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
 	./ballisticpgo tmp.xml out2-rk-$i-1-2
 done
 for i in 2 3; do
@@ -87,7 +87,7 @@ for i in 2 3; do
 	sed -i "s/time-step=\"1\"/time-step=\"0\"/g" tmp.xml
 	sed -i "s/kt=\"0.6\"/dt=\"0.05\"/g" tmp.xml
 	sed -i "s/land=\"1\"/land=\"2\"/g" tmp.xml
-	sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
+	#sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
 	./ballisticpgo tmp.xml out2-rk-$i-2-2
 done
 for i in 3; do
@@ -96,7 +96,7 @@ for i in 3; do
 	sed -i "s/time-step=\"1\"/time-step=\"0\"/g" tmp.xml
 	sed -i "s/kt=\"0.6\"/dt=\"0.05\"/g" tmp.xml
 	sed -i "s/land=\"1\"/land=\"3\"/g" tmp.xml
-	sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
+	#sed -i "s/time-step=\"0\"/time-step=\"1\"/g" tmp.xml
 	./ballisticpgo tmp.xml out2-rk-$i-3-2
 done
 #rm tmp.xml

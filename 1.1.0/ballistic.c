@@ -63,7 +63,7 @@ unsigned int convergence;
  *
  * \return 1 on success, 0 on error.
  */
-static int
+static inline int
 convergence_read_xml (xmlNode * node)      ///< XML node.
 {
 	const char *message[] = {
@@ -114,7 +114,7 @@ fail:
  *
  * \return 0 on error, 1 on Runge-Kutta method, 2 on multi-steps method.
  */
-int
+static inline int
 method_open_xml (MultiSteps * ms,
 		             RungeKutta * rk,
 								 xmlNode * node)
@@ -178,7 +178,7 @@ fail:
 /**
  * Function to show the error message.
  */
-void
+static void
 show_error ()
 {
   printf ("ERROR!\n%s", error_message);
@@ -189,7 +189,7 @@ show_error ()
 /**
  * Function to print the solution values.
  */
-void
+static void
 print_solution (char *label,    ///< label.
                 long double *r0,        ///< position vector.
                 long double *r1)        ///< velocity vector.
@@ -206,7 +206,7 @@ print_solution (char *label,    ///< label.
 /**
  * Function to print the numerical errors.
  */
-void
+static void
 print_error (char *label,       ///< label.
              long double *r1,   ///< numerical solution vector.
              long double *r2)   ///< analytical solution vector.
@@ -219,7 +219,7 @@ print_error (char *label,       ///< label.
  *
  * \return 0 on success, error code on error.
  */
-int
+static inline int
 convergence_run (xmlNode * node,   ///< XML node.
                  char *output)  ///< results file name.
 {
@@ -379,7 +379,7 @@ fail:
  *
  * \return 0 on success, error code on error.
  */
-int
+static inline int
 ballistic_run (xmlNode * node)    ///< XML node.
 {
   const char *message[] = {

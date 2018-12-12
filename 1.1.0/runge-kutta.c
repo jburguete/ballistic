@@ -120,7 +120,7 @@ static const long double rk_t4[4] = { 0.5L, 0.5L, 1.L, 1.L };
 /**
  * Function to init the coefficients of the 1st order Runge-Kutta method.
  */
-static void
+static inline void
 runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -138,7 +138,7 @@ runge_kutta_init_1 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 2nd order Runge-Kutta method.
  */
-static void
+static inline void
 runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -156,7 +156,7 @@ runge_kutta_init_2 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 3rd order Runge-Kutta method.
  */
-static void
+static inline void
 runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA
@@ -174,7 +174,7 @@ runge_kutta_init_3 (RungeKutta * rk)    ///< RungeKutta struct.
 /**
  * Function to init the coefficients of the 4th order Runge-Kutta method.
  */
-static void
+static inline void
 runge_kutta_init_4 (RungeKutta * rk)    ///< RungeKutta struct.
 {
 #if DEBUG_RUNGE_KUTTA

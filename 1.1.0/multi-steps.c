@@ -137,7 +137,7 @@ multi_steps_init_variables (MultiSteps * ms)
 /**
  * Function to perform a step of the multi-steps method.
  */
-static void
+static inline void
 multi_steps_step (MultiSteps * ms,      ///< MultiSteps struct.
                   Equation * eq,        ///< Equation struct.
                   long double t,        ///< actual time.
@@ -225,7 +225,7 @@ multi_steps_step (MultiSteps * ms,      ///< MultiSteps struct.
 /**
  * Function to estimate the error on a multi-steps method step.
  */
-static void
+static inline void
 multi_steps_error (MultiSteps * ms,     ///< MultiSteps struct.
                    long double dt)      ///< time step size.
 {
